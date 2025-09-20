@@ -1,0 +1,315 @@
+.container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: white;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.backButton {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #3498db;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-right: 1rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.backButton:hover {
+  background-color: #f0f0f0;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.eventsSection {
+  background-color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.calendarSection {
+  background-color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: fit-content;
+  position: sticky;
+  top: 2rem;
+}
+
+.eventsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: #333;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 0.5rem;
+}
+
+.separator {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #ddd, transparent);
+  margin: 1.5rem 0;
+}
+
+.pendingEventCard {
+  background-color: #fff8e1;
+  border-radius: 8px;
+  padding: 1.5rem;
+  border-left: 4px solid #ff9800;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.plannedEventCard {
+  background-color: #e8f5e8;
+  border-radius: 8px;
+  padding: 1.5rem;
+  border-left: 4px solid #2ecc71;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.plannedEventCard[style*="pointer"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.eventHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.eventHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.eventTopic {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+}
+
+.statusBadge {
+  background-color: #ff9800;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.participantBadge {
+  background-color: #2ecc71;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.eventDetail {
+  font-size: 14px;
+  color: #666;
+  margin: 0.25rem 0;
+}
+
+.scheduledTimes {
+  margin: 0.75rem 0;
+}
+
+.scheduledTimesLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.scheduledTimeItem {
+  font-size: 12px;
+  color: #666;
+  background-color: #f8f9fa;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin: 2px 0;
+  border-left: 2px solid #3498db;
+}
+
+.meetingTimeItem {
+  font-size: 13px;
+  color: #2c5530;
+  background-color: #d4edda;
+  padding: 6px 10px;
+  border-radius: 4px;
+  margin: 2px 0;
+  border-left: 3px solid #2ecc71;
+  font-weight: 500;
+}
+
+.moreTimesIndicator {
+  font-size: 11px;
+  color: #666;
+  font-style: italic;
+  margin-top: 4px;
+  text-align: center;
+  padding: 4px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+}
+
+.eventLocation {
+  margin: 0.5rem 0;
+}
+
+.locationLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.locationInfo {
+  margin-left: 0.5rem;
+}
+
+.locationAddress {
+  font-size: 12px;
+  color: #666;
+}
+
+.suggestedLocation {
+  margin: 0.5rem 0;
+  padding: 8px 12px;
+  background-color: #fff3cd;
+  border-radius: 6px;
+  border-left: 3px solid #ffc107;
+}
+
+.suggestedLocationLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #856404;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.suggestedLocationText {
+  font-size: 13px;
+  color: #664d03;
+  font-style: italic;
+}
+
+.eventDate {
+  font-size: 12px;
+  color: #999;
+  margin: 0.5rem 0 0 0;
+}
+
+.chatIndicator {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: #e8f5e8;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 12px;
+  color: #2ecc71;
+  font-weight: 500;
+  border: 1px solid #d4edda;
+}
+
+.deleteButton {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, transform 0.1s;
+  flex-shrink: 0;
+}
+
+.deleteButton:hover {
+  background-color: #c0392b;
+  transform: scale(1.1);
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+  font-style: italic;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 1024px) {
+  .content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .calendarSection {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 1rem;
+  }
+
+  .header {
+    padding: 1rem;
+  }
+
+  .eventsSection,
+  .calendarSection {
+    padding: 1rem;
+  }
+}

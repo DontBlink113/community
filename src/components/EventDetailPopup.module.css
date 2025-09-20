@@ -1,0 +1,264 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.popup {
+  background-color: white;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
+  background-color: #f8f9fa;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.closeButton:hover {
+  background-color: #e9ecef;
+}
+
+.content {
+  padding: 1.5rem;
+  max-height: calc(80vh - 120px);
+  overflow-y: auto;
+}
+
+.section {
+  margin-bottom: 1.5rem;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 1rem 0;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 0.5rem;
+}
+
+.separator {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #ddd, transparent);
+  margin: 1.5rem 0;
+}
+
+.eventItem {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #ff9800;
+}
+
+.eventItem:last-child {
+  margin-bottom: 0;
+}
+
+.plannedEventItem {
+  border-left-color: #2ecc71;
+  background-color: #f1f8f2;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.plannedEventItem[style*="pointer"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.eventHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.eventTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+}
+
+.statusBadge {
+  background-color: #ff9800;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.participantBadge {
+  background-color: #2ecc71;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.eventDetail {
+  font-size: 13px;
+  color: #666;
+  margin: 0.25rem 0;
+}
+
+.scheduledTimes {
+  margin: 0.5rem 0;
+}
+
+.timesLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #555;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.timeItem {
+  font-size: 11px;
+  color: #666;
+  background-color: #e9ecef;
+  padding: 3px 6px;
+  border-radius: 4px;
+  margin: 2px 0;
+  border-left: 2px solid #3498db;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.meetingTimeItem {
+  font-size: 12px;
+  color: #2c5530;
+  background-color: #d4edda;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin: 2px 0;
+  border-left: 3px solid #2ecc71;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.eventLocation {
+  margin: 0.5rem 0;
+}
+
+.locationLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #555;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.locationInfo {
+  margin-left: 0.5rem;
+}
+
+.locationAddress {
+  font-size: 11px;
+  color: #666;
+}
+
+.suggestedLocation {
+  margin: 0.5rem 0;
+  padding: 6px 10px;
+  background-color: #fff3cd;
+  border-radius: 4px;
+  border-left: 3px solid #ffc107;
+}
+
+.suggestedLocationLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #856404;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.suggestedLocationText {
+  font-size: 12px;
+  color: #664d03;
+  font-style: italic;
+}
+
+.chatIndicator {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: #e8f5e8;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 11px;
+  color: #2ecc71;
+  font-weight: 500;
+  border: 1px solid #d4edda;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .popup {
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  .header {
+    padding: 1rem;
+  }
+
+  .content {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+}

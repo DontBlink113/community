@@ -70,6 +70,11 @@
   margin-right: 12px;
 }
 
+.myEventsButton {
+  background-color: #9b59b6;
+  color: white;
+}
+
 .profileButton {
   background-color: #2ecc71;
   color: white;
