@@ -24,12 +24,13 @@ const EventForm = ({ onBack }) => {
     }
 
     try {
-      // Store topic, group size, scheduled times, and location
+      // Store topic, group size, scheduled times, location, and suggested location
       const eventData = {
         topic: event.topic,
         groupSize: event.groupSize,
         scheduledTimes: event.scheduledTimes,
         location: event.location,
+        suggestedLocation: event.suggestedLocation,
         createdBy: currentUser,
         createdAt: new Date().toISOString()
       };
@@ -46,7 +47,8 @@ const EventForm = ({ onBack }) => {
           latitude: null,
           longitude: null,
           address: ''
-        }
+        },
+        suggestedLocation: ''
       });
 
       alert('Event created successfully!');
@@ -432,6 +434,17 @@ const EventForm = ({ onBack }) => {
               </div>
             )}
           </div>
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Suggested Location for Event (Optional)</label>
+          <input
+            type="text"
+            className={styles.input}
+            value={event.suggestedLocation}
+            onChange={(e) => updateEvent({ suggestedLocation: e.target.value })}
+            placeholder="e.g., Coffee shop downtown, Park near campus, etc."
+          />
         </div>
 
         <div className={styles.formGroup}>

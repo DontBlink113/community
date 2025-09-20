@@ -223,3 +223,25 @@
   color: #999;
   font-family: monospace;
 }
+
+.suggestedLocation {
+  margin: 0.5rem 0;
+  padding: 8px 12px;
+  background-color: #fff3cd;
+  border-radius: 6px;
+  border-left: 3px solid #ffc107;
+}
+
+.suggestedLocationLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #856404;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.suggestedLocationText {
+  font-size: 13px;
+  color: #664d03;
+  font-style: italic;
+}

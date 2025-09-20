@@ -17,7 +17,8 @@ export const EventProvider = ({ children }) => {
       latitude: null,
       longitude: null,
       address: ''
-    }
+    },
+    suggestedLocation: ''
   });
 
   const updateEvent = (newEventData) => {

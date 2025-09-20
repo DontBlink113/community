@@ -157,6 +157,12 @@ const HomePage = ({ onNavigateToProfile, onNavigateToEvent }) => {
                     </div>
                   </div>
                 )}
+                {event.suggestedLocation && (
+                  <div className={styles.suggestedLocation}>
+                    <span className={styles.suggestedLocationLabel}>💡 Suggested Location:</span>
+                    <div className={styles.suggestedLocationText}>{event.suggestedLocation}</div>
+                  </div>
+                )}
                 <p className={styles.eventDate}>
                   Created: {new Date(event.createdAt).toLocaleDateString()}
                 </p>
