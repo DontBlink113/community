@@ -109,6 +109,21 @@ const EventForm = ({ onBack }) => {
       return;
     }
 
+    // Check if the selected date and time is in the past or too soon
+    const selectedDateTime = new Date(`${newDate}T${newStartTime}`);
+    const currentDateTime = new Date();
+    const oneHourFromNow = new Date(currentDateTime.getTime() + 60 * 60 * 1000); // Add 1 hour
+
+    if (selectedDateTime <= oneHourFromNow) {
+      const today = new Date().toISOString().split('T')[0];
+      if (newDate === today) {
+        alert('For today\'s date, please select a time that is at least 1 hour from now');
+      } else {
+        alert('Please select a future date and time');
+      }
+      return;
+    }
+
     const newScheduledTime = {
       date: newDate, // Use the date string directly from the input
       startTime: newStartTime,
@@ -353,6 +368,7 @@ const EventForm = ({ onBack }) => {
               value={newDate}
               onChange={(e) => setNewDate(e.target.value)}
               placeholder="Select date"
+              min={new Date().toISOString().split('T')[0]}
             />
             <input
               type="time"
