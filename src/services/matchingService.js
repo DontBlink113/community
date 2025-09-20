@@ -14,7 +14,8 @@ import {
 import {
   findMatchingEvents,
   getCityFromCoordinates,
-  selectRandomSuggestedLocation
+  selectRandomSuggestedLocation,
+  isGroupSizeAcceptable
 } from '../utils/eventMatching';
 
 // Check for matches when a new event is created
@@ -32,23 +33,17 @@ export const checkForMatches = async (newEvent) => {
       ...doc.data()
     }));
 
-    // Find matching events
+    // Find matching events by topic and location
     const matchingEvents = findMatchingEvents(newEvent, existingEvents);
 
-    // Check if we have enough people for a group (minimum 2, including new event)
     if (matchingEvents.length >= 1) {
       const allEventsInGroup = [newEvent, ...matchingEvents];
 
-      // Determine optimal group size based on preferences
-      const groupSizes = allEventsInGroup.map(event => event.groupSize);
-      const avgGroupSize = Math.round(groupSizes.reduce((a, b) => a + b, 0) / groupSizes.length);
-      const targetSize = Math.min(avgGroupSize, allEventsInGroup.length);
+      // Try to form groups that satisfy everyone's size preferences
+      const compatibleGroup = findCompatibleGroupSize(allEventsInGroup);
 
-      // Take the target number of events to form the group
-      const selectedEvents = allEventsInGroup.slice(0, targetSize);
-
-      if (selectedEvents.length >= 2) {
-        await createPlannedEvent(selectedEvents);
+      if (compatibleGroup && compatibleGroup.length >= 2) {
+        await createPlannedEvent(compatibleGroup);
         return true; // Match found and planned event created
       }
     }
@@ -58,6 +53,27 @@ export const checkForMatches = async (newEvent) => {
     console.error('Error checking for matches:', error);
     return false;
   }
+};
+
+// Find a subset of events that form a group acceptable to all participants
+const findCompatibleGroupSize = (events) => {
+  // Sort by group size preference (smallest first for better matching)
+  const sortedEvents = [...events].sort((a, b) => a.groupSize - b.groupSize);
+
+  // Try different group sizes starting from minimum preferences
+  for (let groupSize = 2; groupSize <= events.length; groupSize++) {
+    // Check if this group size is acceptable to at least 'groupSize' number of people
+    const acceptableEvents = sortedEvents.filter(event =>
+      isGroupSizeAcceptable(groupSize, event.groupSize)
+    );
+
+    if (acceptableEvents.length >= groupSize) {
+      // Return the first 'groupSize' events that accept this size
+      return acceptableEvents.slice(0, groupSize);
+    }
+  }
+
+  return null; // No compatible group size found
 };
 
 // Create a planned event from matched individual events

@@ -65,23 +65,42 @@ export const findMatchingEvents = (newEvent, existingEvents, maxDistance = 25) =
   return matches;
 };
 
-// Group events by compatibility for matching
-export const groupCompatibleEvents = (events, targetGroupSize) => {
+// Calculate acceptable group size range (±25%)
+export const getGroupSizeRange = (preferredSize) => {
+  const tolerance = Math.max(1, Math.floor(preferredSize / 4)); // At least 1 person tolerance
+  return {
+    min: Math.max(2, preferredSize - tolerance), // Minimum of 2 people
+    max: preferredSize + tolerance
+  };
+};
+
+// Check if a group size is acceptable for a person's preference
+export const isGroupSizeAcceptable = (actualSize, preferredSize) => {
+  const range = getGroupSizeRange(preferredSize);
+  return actualSize >= range.min && actualSize <= range.max;
+};
+
+// Group events by compatibility with preference-based thresholds
+export const groupCompatibleEvents = (events) => {
   const groups = [];
   const usedEventIds = new Set();
 
-  for (const event of events) {
+  // Sort events by group size preference to handle smaller groups first
+  const sortedEvents = [...events].sort((a, b) => a.groupSize - b.groupSize);
+
+  for (const event of sortedEvents) {
     if (usedEventIds.has(event.id)) continue;
 
     const compatibleEvents = [event];
     usedEventIds.add(event.id);
 
-    // Find other compatible events
-    for (const otherEvent of events) {
-      if (usedEventIds.has(otherEvent.id)) continue;
-      if (compatibleEvents.length >= targetGroupSize) break;
+    // Find other compatible events within location and topic
+    const potentialMatches = [];
 
-      // Check if compatible
+    for (const otherEvent of sortedEvents) {
+      if (usedEventIds.has(otherEvent.id)) continue;
+
+      // Check topic and location compatibility
       if (topicsMatch(event.topic, otherEvent.topic) &&
           event.location.latitude && event.location.longitude &&
           otherEvent.location.latitude && otherEvent.location.longitude) {
@@ -94,15 +113,41 @@ export const groupCompatibleEvents = (events, targetGroupSize) => {
         );
 
         if (distance <= 25) { // 25 mile radius
-          compatibleEvents.push(otherEvent);
-          usedEventIds.add(otherEvent.id);
+          potentialMatches.push(otherEvent);
         }
       }
     }
 
-    // Only create group if we have enough people
-    if (compatibleEvents.length >= 2) {
+    // Try to form a group that satisfies the original event's size preference
+    const targetRange = getGroupSizeRange(event.groupSize);
+
+    // Add compatible events until we reach the preferred range
+    for (const match of potentialMatches) {
+      if (compatibleEvents.length >= targetRange.max) break;
+
+      // Check if adding this person would still be acceptable for everyone in the group
+      const newGroupSize = compatibleEvents.length + 1;
+      const allAcceptable = compatibleEvents.every(e =>
+        isGroupSizeAcceptable(newGroupSize, e.groupSize)
+      ) && isGroupSizeAcceptable(newGroupSize, match.groupSize);
+
+      if (allAcceptable) {
+        compatibleEvents.push(match);
+        usedEventIds.add(match.id);
+      }
+    }
+
+    // Only create group if we have acceptable size for all participants
+    const finalGroupSize = compatibleEvents.length;
+    const groupIsValid = compatibleEvents.every(e =>
+      isGroupSizeAcceptable(finalGroupSize, e.groupSize)
+    ) && finalGroupSize >= 2;
+
+    if (groupIsValid) {
       groups.push(compatibleEvents);
+    } else {
+      // If group doesn't meet size requirements, mark events as unused again
+      compatibleEvents.forEach(e => usedEventIds.delete(e.id));
     }
   }
 
