@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import styles from './EventForm.module.css';
 import { db } from '../firebase';
 import { collection, addDoc } from 'firebase/firestore';
+import { checkForMatches } from '../services/matchingService';
 
 const EventForm = ({ onBack }) => {
   const { event, updateEvent } = useEvent();
@@ -35,7 +36,13 @@ const EventForm = ({ onBack }) => {
         createdAt: new Date().toISOString()
       };
 
-      await addDoc(collection(db, 'events'), eventData);
+      const docRef = await addDoc(collection(db, 'events'), eventData);
+
+      // Add the document ID to the event data for matching
+      const eventWithId = { ...eventData, id: docRef.id };
+
+      // Check for matches with other events
+      const matchFound = await checkForMatches(eventWithId);
 
       // Clear the form and go back to home
       updateEvent({
@@ -51,7 +58,11 @@ const EventForm = ({ onBack }) => {
         suggestedLocation: ''
       });
 
-      alert('Event created successfully!');
+      if (matchFound) {
+        alert('Event created and matched with other users! Check your Planned Events section.');
+      } else {
+        alert('Event created successfully! We\'ll notify you when we find matching participants.');
+      }
       onBack();
     } catch (error) {
       console.error('Error creating event:', error);

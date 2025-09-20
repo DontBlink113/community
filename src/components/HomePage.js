@@ -5,22 +5,26 @@ import { useProfile } from '../context/ProfileContext';
 import LoginModal from './LoginModal';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { getUserPlannedEvents } from '../services/matchingService';
 
 const HomePage = ({ onNavigateToProfile, onNavigateToEvent }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [userEvents, setUserEvents] = useState([]);
+  const [plannedEvents, setPlannedEvents] = useState([]);
   const { isLoggedIn, logout, currentUser } = useAuth();
   const { profile } = useProfile();
 
-  // Fetch user's events when they're logged in
+  // Fetch user's events and planned events when they're logged in
   useEffect(() => {
-    const fetchUserEvents = async () => {
+    const fetchUserData = async () => {
       if (!currentUser) {
         setUserEvents([]);
+        setPlannedEvents([]);
         return;
       }
 
       try {
+        // Fetch regular events
         const eventsQuery = query(
           collection(db, 'events'),
           where('createdBy', '==', currentUser)
@@ -36,12 +40,18 @@ const HomePage = ({ onNavigateToProfile, onNavigateToEvent }) => {
         events.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         setUserEvents(events);
+
+        // Fetch planned events
+        const plannedEventsData = await getUserPlannedEvents(currentUser);
+        plannedEventsData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setPlannedEvents(plannedEventsData);
+
       } catch (error) {
-        console.error('Error fetching user events:', error);
+        console.error('Error fetching user data:', error);
       }
     };
 
-    fetchUserEvents();
+    fetchUserData();
   }, [currentUser]);
 
   const handleDeleteEvent = async (eventId) => {
@@ -171,6 +181,48 @@ const HomePage = ({ onNavigateToProfile, onNavigateToEvent }) => {
           </div>
         </div>
       )}
+
+      {isLoggedIn && plannedEvents.length > 0 && (
+        <div className={styles.eventsSection}>
+          <h2 className={styles.eventsTitle}>🎯 Planned Events</h2>
+          <div className={styles.eventsList}>
+            {plannedEvents.map(event => (
+              <div key={event.id} className={styles.plannedEventCard}>
+                <div className={styles.eventHeader}>
+                  <h3 className={styles.eventTopic}>{event.name}</h3>
+                  <span className={styles.participantBadge}>
+                    {event.participantCount} participants
+                  </span>
+                </div>
+                <p className={styles.eventDetail}>Topic: {event.topic}</p>
+                <p className={styles.eventDetail}>Area: {event.city}</p>
+                <p className={styles.eventDetail}>📍 Event Location: {event.eventLocation}</p>
+
+                {event.scheduledTimes && event.scheduledTimes.length > 0 && (
+                  <div className={styles.scheduledTimes}>
+                    <span className={styles.scheduledTimesLabel}>Available Times:</span>
+                    {event.scheduledTimes.slice(0, 3).map((time, index) => (
+                      <div key={index} className={styles.scheduledTimeItem}>
+                        {new Date(time.date).toLocaleDateString()} • {time.startTime} - {time.endTime}
+                      </div>
+                    ))}
+                    {event.scheduledTimes.length > 3 && (
+                      <div className={styles.moreTimesIndicator}>
+                        +{event.scheduledTimes.length - 3} more times available
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <p className={styles.eventDate}>
+                  Planned: {new Date(event.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {showLoginModal && (
         <LoginModal onClose={() => setShowLoginModal(false)} />
       )}
