@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useEvent } from '../context/EventContext';
 import { useAuth } from '../context/AuthContext';
 import styles from './EventForm.module.css';
@@ -12,6 +12,8 @@ const EventForm = ({ onBack }) => {
   const [newDate, setNewDate] = useState('');
   const [newStartTime, setNewStartTime] = useState('');
   const [newEndTime, setNewEndTime] = useState('');
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [isGeocoding, setIsGeocoding] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,11 +24,12 @@ const EventForm = ({ onBack }) => {
     }
 
     try {
-      // Store topic, group size, and scheduled times
+      // Store topic, group size, scheduled times, and location
       const eventData = {
         topic: event.topic,
         groupSize: event.groupSize,
         scheduledTimes: event.scheduledTimes,
+        location: event.location,
         createdBy: currentUser,
         createdAt: new Date().toISOString()
       };
@@ -37,7 +40,13 @@ const EventForm = ({ onBack }) => {
       updateEvent({
         topic: '',
         groupSize: 2,
-        scheduledTimes: []
+        scheduledTimes: [],
+        location: {
+          name: '',
+          latitude: null,
+          longitude: null,
+          address: ''
+        }
       });
 
       alert('Event created successfully!');
@@ -108,6 +117,131 @@ const EventForm = ({ onBack }) => {
       scheduledTimes: event.scheduledTimes.filter((_, index) => index !== indexToRemove)
     });
   };
+
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by this browser');
+      return;
+    }
+
+    setIsGettingLocation(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
+        try {
+          // Try to get address from coordinates using reverse geocoding
+          // For now, we'll use a simple format, but this could be enhanced with a geocoding service
+          const address = `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`;
+
+          updateEvent({
+            location: {
+              name: '',
+              latitude,
+              longitude,
+              address
+            }
+          });
+
+          setIsGettingLocation(false);
+        } catch (error) {
+          console.error('Error getting address:', error);
+          updateEvent({
+            location: {
+              name: '',
+              latitude,
+              longitude,
+              address: `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`
+            }
+          });
+          setIsGettingLocation(false);
+        }
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        alert('Failed to get current location. Please check your location permissions.');
+        setIsGettingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    );
+  };
+
+  const handleLocationInputChange = (field, value) => {
+    updateEvent({
+      location: {
+        ...event.location,
+        [field]: value
+      }
+    });
+  };
+
+  const handleClearLocation = () => {
+    updateEvent({
+      location: {
+        name: '',
+        latitude: null,
+        longitude: null,
+        address: ''
+      }
+    });
+  };
+
+  const geocodeAddress = async (address) => {
+    if (!address.trim()) return;
+
+    setIsGeocoding(true);
+    try {
+      const encodedAddress = encodeURIComponent(address.trim());
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=1&addressdetails=1`
+      );
+
+      if (!response.ok) {
+        throw new Error('Geocoding request failed');
+      }
+
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        const result = data[0];
+        const latitude = parseFloat(result.lat);
+        const longitude = parseFloat(result.lon);
+
+        updateEvent({
+          location: {
+            ...event.location,
+            latitude,
+            longitude,
+            address: result.display_name || address
+          }
+        });
+      } else {
+        // If no results found, just keep the user input
+        console.log('No geocoding results found for:', address);
+      }
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      // Don't show error to user, just keep their input
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
+  // Auto-geocode when address changes (with debounce)
+  useEffect(() => {
+    if (!event.location.address || event.location.latitude) return;
+
+    const timeoutId = setTimeout(() => {
+      geocodeAddress(event.location.address);
+    }, 2000); // Wait 2 seconds after user stops typing
+
+    return () => clearTimeout(timeoutId);
+  }, [event.location.address, event.location.latitude]);
 
   return (
     <div className={styles.container}>
@@ -235,6 +369,68 @@ const EventForm = ({ onBack }) => {
                 </button>
               </div>
             ))}
+          </div>
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Location</label>
+          <div className={styles.locationContainer}>
+            <div className={styles.locationInputs}>
+              <input
+                type="text"
+                className={styles.input}
+                value={event.location.address}
+                onChange={(e) => handleLocationInputChange('address', e.target.value)}
+                placeholder="Enter address or location"
+              />
+            </div>
+
+            <div className={styles.locationButtons}>
+              <button
+                type="button"
+                onClick={handleGetCurrentLocation}
+                disabled={isGettingLocation}
+                className={styles.locationButton}
+              >
+                {isGettingLocation ? 'Getting Location...' : 'Use Current Location'}
+              </button>
+              {event.location.address && !event.location.latitude && (
+                <button
+                  type="button"
+                  onClick={() => geocodeAddress(event.location.address)}
+                  disabled={isGeocoding}
+                  className={styles.geocodeButton}
+                >
+                  {isGeocoding ? 'Finding Coordinates...' : 'Find Coordinates'}
+                </button>
+              )}
+              {(event.location.latitude || event.location.address) && (
+                <button
+                  type="button"
+                  onClick={handleClearLocation}
+                  className={styles.clearLocationButton}
+                >
+                  Clear Location
+                </button>
+              )}
+            </div>
+
+            {event.location.latitude && event.location.longitude && (
+              <div className={styles.locationPreview}>
+                <p className={styles.coordinatesText}>
+                  📍 Coordinates: {event.location.latitude.toFixed(6)}, {event.location.longitude.toFixed(6)}
+                </p>
+                <div className={styles.mapPreview}>
+                  <iframe
+                    width="100%"
+                    height="200"
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${event.location.longitude-0.01},${event.location.latitude-0.01},${event.location.longitude+0.01},${event.location.latitude+0.01}&layer=mapnik&marker=${event.location.latitude},${event.location.longitude}`}
+                    style={{ border: 0, borderRadius: '8px' }}
+                    title="Location Preview"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

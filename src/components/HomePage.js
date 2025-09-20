@@ -142,6 +142,21 @@ const HomePage = ({ onNavigateToProfile, onNavigateToEvent }) => {
                     ))}
                   </div>
                 )}
+                {event.location && (event.location.address || event.location.latitude) && (
+                  <div className={styles.eventLocation}>
+                    <span className={styles.locationLabel}>📍 Location:</span>
+                    <div className={styles.locationInfo}>
+                      {event.location.address && (
+                        <div className={styles.locationAddress}>{event.location.address}</div>
+                      )}
+                      {event.location.latitude && event.location.longitude && !event.location.address && (
+                        <div className={styles.locationCoords}>
+                          {event.location.latitude.toFixed(4)}, {event.location.longitude.toFixed(4)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <p className={styles.eventDate}>
                   Created: {new Date(event.createdAt).toLocaleDateString()}
                 </p>

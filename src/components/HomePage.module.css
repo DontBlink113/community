@@ -188,3 +188,38 @@
   margin: 2px 0;
   border-left: 2px solid #3498db;
 }
+
+.eventLocation {
+  margin: 0.5rem 0;
+}
+
+.locationLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.locationInfo {
+  margin-left: 0.5rem;
+}
+
+.locationName {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.locationAddress {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 2px;
+}
+
+.locationCoords {
+  font-size: 11px;
+  color: #999;
+  font-family: monospace;
+}

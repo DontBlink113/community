@@ -195,3 +195,96 @@
 .removeScheduledTime:hover {
   background-color: #c0392b;
 }
+
+.locationContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.locationInputs {
+  display: flex;
+  flex-direction: column;
+}
+
+.locationButtons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.locationButton {
+  padding: 8px 16px;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.locationButton:hover:not(:disabled) {
+  background-color: #27ae60;
+}
+
+.locationButton:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+.geocodeButton {
+  padding: 8px 16px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.geocodeButton:hover:not(:disabled) {
+  background-color: #2980b9;
+}
+
+.geocodeButton:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+.clearLocationButton {
+  padding: 8px 16px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.clearLocationButton:hover {
+  background-color: #c0392b;
+}
+
+.locationPreview {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  border-left: 4px solid #2ecc71;
+}
+
+.coordinatesText {
+  margin: 0 0 0.5rem 0;
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.mapPreview {
+  margin-top: 0.5rem;
+}

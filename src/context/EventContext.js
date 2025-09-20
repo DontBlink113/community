@@ -11,7 +11,13 @@ export const EventProvider = ({ children }) => {
     groupSize: 2,
     sameGender: false,
     includedPeople: [],
-    scheduledTimes: [] // Array of {date, startTime, endTime} objects
+    scheduledTimes: [], // Array of {date, startTime, endTime} objects
+    location: {
+      name: '',
+      latitude: null,
+      longitude: null,
+      address: ''
+    }
   });
 
   const updateEvent = (newEventData) => {
