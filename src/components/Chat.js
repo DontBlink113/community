@@ -7,7 +7,6 @@ import {
   collection,
   query,
   where,
-  orderBy,
   onSnapshot,
   addDoc,
   doc,
@@ -57,8 +56,7 @@ const Chat = ({ chatId, onBack }) => {
 
     const messagesQuery = query(
       collection(db, 'messages'),
-      where('chatId', '==', chatId),
-      orderBy('createdAt', 'asc')
+      where('chatId', '==', chatId)
     );
 
     const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
@@ -66,6 +64,10 @@ const Chat = ({ chatId, onBack }) => {
         id: doc.id,
         ...doc.data()
       }));
+
+      // Sort messages by creation date on the client side
+      messagesData.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
       setMessages(messagesData);
       setLoading(false);
     });
