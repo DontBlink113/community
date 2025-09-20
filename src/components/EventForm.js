@@ -100,7 +100,7 @@ const EventForm = ({ onBack }) => {
     }
 
     const newScheduledTime = {
-      date: newDate,
+      date: newDate, // Use the date string directly from the input
       startTime: newStartTime,
       endTime: newEndTime
     };
@@ -371,7 +371,7 @@ const EventForm = ({ onBack }) => {
             {event.scheduledTimes.map((scheduledTime, index) => (
               <div key={index} className={styles.scheduledTime}>
                 <span>
-                  {new Date(scheduledTime.date).toLocaleDateString()} • {scheduledTime.startTime} - {scheduledTime.endTime}
+                  {scheduledTime.date} • {scheduledTime.startTime} - {scheduledTime.endTime}
                 </span>
                 <button
                   type="button"

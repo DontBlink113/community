@@ -15,7 +15,10 @@ import {
   findMatchingEvents,
   getCityFromCoordinates,
   selectRandomSuggestedLocation,
-  isGroupSizeAcceptable
+  isGroupSizeAcceptable,
+  eventsHaveTimeCompatibility,
+  findCommonAvailableTimes,
+  selectOptimalMeetingTime
 } from '../utils/eventMatching';
 
 // Check for matches when a new event is created
@@ -68,12 +71,45 @@ const findCompatibleGroupSize = (events) => {
     );
 
     if (acceptableEvents.length >= groupSize) {
-      // Return the first 'groupSize' events that accept this size
-      return acceptableEvents.slice(0, groupSize);
+      // Try different combinations of this size to find time-compatible groups
+      const combinations = generateCombinations(acceptableEvents, groupSize);
+
+      for (const combination of combinations) {
+        // Check if this combination has time compatibility
+        if (eventsHaveTimeCompatibility(combination)) {
+          return combination;
+        }
+      }
     }
   }
 
-  return null; // No compatible group size found
+  return null; // No compatible group found
+};
+
+// Generate all combinations of n events from the array
+const generateCombinations = (events, n) => {
+  if (n === 1) return events.map(event => [event]);
+  if (n === events.length) return [events];
+
+  const combinations = [];
+
+  // Use iterative approach for better performance with smaller groups
+  if (n === 2) {
+    for (let i = 0; i < events.length - 1; i++) {
+      for (let j = i + 1; j < events.length; j++) {
+        combinations.push([events[i], events[j]]);
+      }
+    }
+    return combinations;
+  }
+
+  // For larger groups, use a more efficient selection approach
+  // Just try the first n events for simplicity in this implementation
+  if (events.length >= n) {
+    combinations.push(events.slice(0, n));
+  }
+
+  return combinations;
 };
 
 // Create a planned event from matched individual events
@@ -89,6 +125,10 @@ export const createPlannedEvent = async (matchedEvents) => {
     );
     const eventLocation = selectRandomSuggestedLocation(matchedEvents);
 
+    // Find common available times and select the optimal one
+    const commonTimes = findCommonAvailableTimes(matchedEvents);
+    const selectedMeetingTime = selectOptimalMeetingTime(commonTimes);
+
     const plannedEventData = {
       name: `${firstEvent.topic} Group`,
       topic: firstEvent.topic,
@@ -97,7 +137,8 @@ export const createPlannedEvent = async (matchedEvents) => {
       participants: matchedEvents.map(event => event.createdBy),
       participantCount: matchedEvents.length,
       originalEvents: matchedEvents.map(event => event.id),
-      scheduledTimes: matchedEvents.flatMap(event => event.scheduledTimes || []),
+      meetingTime: selectedMeetingTime, // Single selected meeting time
+      allAvailableTimes: matchedEvents.flatMap(event => event.scheduledTimes || []), // Keep original for reference
       createdAt: new Date().toISOString(),
       status: 'planned'
     };

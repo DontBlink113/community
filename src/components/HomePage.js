@@ -14,6 +14,17 @@ const HomePage = ({ onNavigateToProfile, onNavigateToEvent }) => {
   const { isLoggedIn, logout, currentUser } = useAuth();
   const { profile } = useProfile();
 
+  // Helper function to format dates without timezone issues
+  const formatDate = (dateString) => {
+    // If it's already a formatted date string (YYYY-MM-DD), format it directly
+    if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const [year, month, day] = dateString.split('-');
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day)).toLocaleDateString();
+    }
+    // Otherwise, use the original date handling for createdAt timestamps
+    return new Date(dateString).toLocaleDateString();
+  };
+
   // Fetch user's events and planned events when they're logged in
   useEffect(() => {
     const fetchUserData = async () => {
@@ -147,7 +158,7 @@ const HomePage = ({ onNavigateToProfile, onNavigateToEvent }) => {
                     <span className={styles.scheduledTimesLabel}>Scheduled Times:</span>
                     {event.scheduledTimes.map((time, index) => (
                       <div key={index} className={styles.scheduledTimeItem}>
-                        {new Date(time.date).toLocaleDateString()} • {time.startTime} - {time.endTime}
+                        {formatDate(time.date)} • {time.startTime} - {time.endTime}
                       </div>
                     ))}
                   </div>
@@ -198,19 +209,17 @@ const HomePage = ({ onNavigateToProfile, onNavigateToEvent }) => {
                 <p className={styles.eventDetail}>Area: {event.city}</p>
                 <p className={styles.eventDetail}>📍 Event Location: {event.eventLocation}</p>
 
-                {event.scheduledTimes && event.scheduledTimes.length > 0 && (
+                {event.meetingTime && (
                   <div className={styles.scheduledTimes}>
-                    <span className={styles.scheduledTimesLabel}>Available Times:</span>
-                    {event.scheduledTimes.slice(0, 3).map((time, index) => (
-                      <div key={index} className={styles.scheduledTimeItem}>
-                        {new Date(time.date).toLocaleDateString()} • {time.startTime} - {time.endTime}
-                      </div>
-                    ))}
-                    {event.scheduledTimes.length > 3 && (
-                      <div className={styles.moreTimesIndicator}>
-                        +{event.scheduledTimes.length - 3} more times available
-                      </div>
-                    )}
+                    <span className={styles.scheduledTimesLabel}>🕐 Meeting Time:</span>
+                    <div className={styles.meetingTimeItem}>
+                      {formatDate(event.meetingTime.date)} at {event.meetingTime.startTime}
+                      {event.meetingTime.duration && (
+                        <span className={styles.durationBadge}>
+                          {Math.floor(event.meetingTime.duration / 60)}h {event.meetingTime.duration % 60}m available
+                        </span>
+                      )}
+                    </div>
                   </div>
                 )}
 
