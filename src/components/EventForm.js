@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useEvent } from '../context/EventContext';
 import { useAuth } from '../context/AuthContext';
 import styles from './EventForm.module.css';
@@ -191,7 +191,7 @@ const EventForm = ({ onBack }) => {
     });
   };
 
-  const geocodeAddress = async (address) => {
+  const geocodeAddress = useCallback(async (address) => {
     if (!address.trim()) return;
 
     setIsGeocoding(true);
@@ -230,7 +230,7 @@ const EventForm = ({ onBack }) => {
     } finally {
       setIsGeocoding(false);
     }
-  };
+  }, [event.location, updateEvent]);
 
   // Auto-geocode when address changes (with debounce)
   useEffect(() => {
@@ -241,7 +241,7 @@ const EventForm = ({ onBack }) => {
     }, 2000); // Wait 2 seconds after user stops typing
 
     return () => clearTimeout(timeoutId);
-  }, [event.location.address, event.location.latitude]);
+  }, [event.location.address, event.location.latitude, geocodeAddress]);
 
   return (
     <div className={styles.container}>
