@@ -29,6 +29,11 @@ const EventForm = ({ onBack }) => {
       return;
     }
 
+    if (!event.groupSize || event.groupSize < 2) {
+      alert('Group size must be at least 2 people');
+      return;
+    }
+
     try {
       // Store topic, group size, scheduled times, location, and suggested location
       const eventData = {
@@ -333,8 +338,8 @@ const EventForm = ({ onBack }) => {
             type="number"
             className={styles.input}
             value={event.groupSize}
-            onChange={(e) => updateEvent({ groupSize: Math.max(2, parseInt(e.target.value)) })}
-            min="2"
+            onChange={(e) => updateEvent({ groupSize: parseInt(e.target.value) || '' })}
+            min="1"
             required
           />
         </div>
