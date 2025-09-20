@@ -1,0 +1,90 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.appTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.appTitle:hover {
+  color: #2980b9;
+}
+
+.headerButtons {
+  display: flex;
+  gap: 12px;
+}
+
+.welcomeSection {
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #eee;
+}
+
+.welcomeMessage {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+  margin-left: 1rem;
+}
+
+.button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+}
+
+.loginButton {
+  background-color: #3498db;
+  color: white;
+  margin-right: 12px;
+}
+
+.profileButton {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.createEventContainer {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.createEventButton {
+  background-color: #e74c3c;
+  color: white;
+  font-size: 20px;
+  padding: 16px 32px;
+}
