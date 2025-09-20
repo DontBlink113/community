@@ -26,6 +26,26 @@
   gap: 1rem;
 }
 
+.form h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #333;
+  font-size: 24px;
+}
+
+.switchButton {
+  background: none;
+  border: none;
+  color: #3498db;
+  margin-top: 1rem;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.switchButton:hover {
+  text-decoration: underline;
+}
+
 .input {
   padding: 10px;
   border: 1px solid #ddd;

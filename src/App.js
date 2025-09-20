@@ -5,6 +5,7 @@ import EventForm from './components/EventForm';
 import { AuthProvider } from './context/AuthContext';
 import { ProfileProvider } from './context/ProfileContext';
 import { EventProvider } from './context/EventContext';
+import './firebase';  // This initializes Firebase
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');

@@ -1,52 +1,170 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useProfile } from '../context/ProfileContext';
+import { useAuth } from '../context/AuthContext';
 import styles from './ProfilePage.module.css';
+import { db, storage } from '../firebase';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 
 const ProfilePage = ({ onBack }) => {
   const { profile, updateProfile } = useProfile();
+  const { currentUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [newInterest, setNewInterest] = useState('');
   const [tempImage, setTempImage] = useState(null);
   const [editedProfile, setEditedProfile] = useState(profile);
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setTempImage(reader.result);
-        updateProfile({ profilePicture: reader.result });
-      };
-      reader.readAsDataURL(file);
+      try {
+        setTempImage(URL.createObjectURL(file));
+
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          try {
+            // Upload to Firebase Storage with unique filename
+            const fileName = `${Date.now()}-${file.name}`;
+            const imageRef = ref(storage, `profilePictures/${currentUser}/${fileName}`);
+            await uploadString(imageRef, reader.result, 'data_url');
+            const downloadUrl = await getDownloadURL(imageRef);
+            
+            // Update Firestore and local state
+            const userDocRef = doc(db, 'profiles', currentUser);
+            await setDoc(userDocRef, {
+              ...profile,
+              profilePicture: downloadUrl,
+              updatedAt: new Date().toISOString()
+            }, { merge: true });
+            
+            updateProfile({ profilePicture: downloadUrl });
+          } catch (error) {
+            console.error('Error saving image:', error);
+            alert('Failed to upload image. Please try again.');
+          }
+        };
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error('Error handling image:', error);
+        alert('Failed to process image. Please try again.');
+      }
     }
   };
 
-  const handleAddInterest = (e) => {
+  const handleAddInterest = async (e) => {
     e.preventDefault();
-    if (newInterest.trim() && !profile.interests.includes(newInterest.trim())) {
+    const trimmedInterest = newInterest.trim();
+    if (trimmedInterest && !profile.interests.includes(trimmedInterest)) {
+      const updatedInterests = [...profile.interests, trimmedInterest];
+      try {
+        const userDocRef = doc(db, 'profiles', currentUser);
+        await setDoc(userDocRef, {
+          interests: updatedInterests,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+        
+        updateProfile({
+          interests: updatedInterests
+        });
+        setNewInterest('');
+      } catch (error) {
+        console.error('Error saving interest:', error);
+        alert('Failed to add interest. Please try again.');
+      }
+    }
+  };
+
+  const handleRemoveInterest = async (interest) => {
+    try {
+      const updatedInterests = profile.interests.filter(i => i !== interest);
+      const userDocRef = doc(db, 'profiles', currentUser);
+      await setDoc(userDocRef, {
+        interests: updatedInterests,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+
       updateProfile({
-        interests: [...profile.interests, newInterest.trim()]
+        interests: updatedInterests
       });
-      setNewInterest('');
+    } catch (error) {
+      console.error('Error removing interest:', error);
+      alert('Failed to remove interest. Please try again.');
     }
   };
 
-  const handleRemoveInterest = (interest) => {
-    updateProfile({
-      interests: profile.interests.filter(i => i !== interest)
-    });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, you would typically save this to a backend
-    console.log('Profile saved:', profile);
+    try {
+      // Save profile data to Firestore
+      const userDocRef = doc(db, 'profiles', currentUser); // Replace with actual user ID later
+      
+      // If there's a profile picture, save it to Storage first
+      let profilePictureUrl = profile.profilePicture;
+      if (profilePictureUrl && profilePictureUrl.startsWith('data:')) {
+        const imageRef = ref(storage, `profilePictures/user123`);
+        await uploadString(imageRef, profilePictureUrl, 'data_url');
+        profilePictureUrl = await getDownloadURL(imageRef);
+      }
+
+      // Save to Firestore
+      await setDoc(userDocRef, {
+        name: profile.name,
+        interests: profile.interests,
+        profilePicture: profilePictureUrl,
+        updatedAt: new Date().toISOString()
+      });
+
+      console.log('Profile saved successfully!');
+    } catch (error) {
+      console.error('Error saving profile:', error);
+    }
   };
 
-  const handleEditToggle = () => {
+  // Load profile data when component mounts
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!currentUser) return;
+      
+      try {
+        const userDocRef = doc(db, 'profiles', currentUser);
+        const docSnap = await getDoc(userDocRef);
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          updateProfile({
+            name: data.name,
+            interests: data.interests || [],
+            profilePicture: data.profilePicture
+          });
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+    };
+
+    loadProfile();
+  }, [currentUser, updateProfile]);
+  const handleEditToggle = async () => {
     if (isEditing) {
-      // Save changes
-      updateProfile(editedProfile);
+      try {
+        const userDocRef = doc(db, 'profiles', currentUser);
+        
+        // Save all profile data
+        await setDoc(userDocRef, {
+          ...editedProfile,
+          name: editedProfile.name || profile.name,
+          interests: editedProfile.interests || [],
+          profilePicture: editedProfile.profilePicture || profile.profilePicture,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+
+        // Update local state
+        updateProfile(editedProfile);
+      } catch (error) {
+        console.error('Error saving profile changes:', error);
+        alert('Failed to save profile changes. Please try again.');
+        return; // Don't exit edit mode if save failed
+      }
     } else {
       // Start editing - initialize editedProfile with current profile
       setEditedProfile({ ...profile });
