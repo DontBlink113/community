@@ -3,8 +3,6 @@
 import { db } from '../firebase';
 import {
   collection,
-  addDoc,
-  deleteDoc,
   doc,
   getDocs,
   query,
@@ -205,7 +203,7 @@ export const checkExistingEventsForMatches = async () => {
     }
 
     // Check each topic group for potential matches
-    for (const [topic, events] of Object.entries(eventsByTopic)) {
+    for (const [, events] of Object.entries(eventsByTopic)) {
       if (events.length >= 2) {
         // Try to create matches within this topic
         await attemptTopicMatching(events);
