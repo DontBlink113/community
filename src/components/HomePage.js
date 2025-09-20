@@ -214,11 +214,6 @@ const HomePage = ({ onNavigateToProfile, onNavigateToEvent }) => {
                     <span className={styles.scheduledTimesLabel}>🕐 Meeting Time:</span>
                     <div className={styles.meetingTimeItem}>
                       {formatDate(event.meetingTime.date)} at {event.meetingTime.startTime}
-                      {event.meetingTime.duration && (
-                        <span className={styles.durationBadge}>
-                          {Math.floor(event.meetingTime.duration / 60)}h {event.meetingTime.duration % 60}m available
-                        </span>
-                      )}
                     </div>
                   </div>
                 )}

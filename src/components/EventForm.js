@@ -24,6 +24,11 @@ const EventForm = ({ onBack }) => {
       return;
     }
 
+    if (!event.scheduledTimes || event.scheduledTimes.length === 0) {
+      alert('Please add at least one scheduled time for your event');
+      return;
+    }
+
     try {
       // Store topic, group size, scheduled times, location, and suggested location
       const eventData = {
