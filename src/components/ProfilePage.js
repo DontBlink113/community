@@ -12,7 +12,6 @@ const ProfilePage = ({ onBack }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [newInterest, setNewInterest] = useState('');
   const [tempImage, setTempImage] = useState(null);
-  const [editedProfile, setEditedProfile] = useState(profile);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -92,33 +91,6 @@ const ProfilePage = ({ onBack }) => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      // Save profile data to Firestore
-      const userDocRef = doc(db, 'profiles', currentUser); // Replace with actual user ID later
-      
-      // If there's a profile picture, save it to Storage first
-      let profilePictureUrl = profile.profilePicture;
-      if (profilePictureUrl && profilePictureUrl.startsWith('data:')) {
-        const imageRef = ref(storage, `profilePictures/user123`);
-        await uploadString(imageRef, profilePictureUrl, 'data_url');
-        profilePictureUrl = await getDownloadURL(imageRef);
-      }
-
-      // Save to Firestore
-      await setDoc(userDocRef, {
-        name: profile.name,
-        interests: profile.interests,
-        profilePicture: profilePictureUrl,
-        updatedAt: new Date().toISOString()
-      });
-
-      console.log('Profile saved successfully!');
-    } catch (error) {
-      console.error('Error saving profile:', error);
-    }
-  };
 
   // Load profile data when component mounts
   useEffect(() => {
@@ -144,31 +116,7 @@ const ProfilePage = ({ onBack }) => {
 
     loadProfile();
   }, [currentUser, updateProfile]);
-  const handleEditToggle = async () => {
-    if (isEditing) {
-      try {
-        const userDocRef = doc(db, 'profiles', currentUser);
-        
-        // Save all profile data
-        await setDoc(userDocRef, {
-          ...editedProfile,
-          name: editedProfile.name || profile.name,
-          interests: editedProfile.interests || [],
-          profilePicture: editedProfile.profilePicture || profile.profilePicture,
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
-
-        // Update local state
-        updateProfile(editedProfile);
-      } catch (error) {
-        console.error('Error saving profile changes:', error);
-        alert('Failed to save profile changes. Please try again.');
-        return; // Don't exit edit mode if save failed
-      }
-    } else {
-      // Start editing - initialize editedProfile with current profile
-      setEditedProfile({ ...profile });
-    }
+  const handleEditToggle = () => {
     setIsEditing(!isEditing);
   };
 
@@ -185,10 +133,10 @@ const ProfilePage = ({ onBack }) => {
         className={styles.editButton}
         onClick={handleEditToggle}
       >
-        {isEditing ? 'Save Changes' : 'Edit Profile'}
+{isEditing ? 'Stop Editing' : 'Edit Profile'}
       </button>
       {isEditing ? (
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <div className={styles.form}>
         <div className={styles.imageUpload}>
           <img
             src={tempImage || profile.profilePicture || '/default-avatar.png'}
@@ -252,10 +200,7 @@ const ProfilePage = ({ onBack }) => {
           </div>
         </div>
 
-        <button type="submit" className={styles.saveButton}>
-          Save Profile
-        </button>
-      </form>
+        </div>
       ) : (
         <div className={styles.viewMode}>
           <div className={styles.imageUpload}>
