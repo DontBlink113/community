@@ -10,7 +10,8 @@ export const EventProvider = ({ children }) => {
     intensity: 'medium', // low, medium, high
     groupSize: 2,
     sameGender: false,
-    includedPeople: []
+    includedPeople: [],
+    scheduledTimes: [] // Array of {date, startTime, endTime} objects
   });
 
   const updateEvent = (newEventData) => {

@@ -1,15 +1,51 @@
 import React, { useState } from 'react';
 import { useEvent } from '../context/EventContext';
+import { useAuth } from '../context/AuthContext';
 import styles from './EventForm.module.css';
+import { db } from '../firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 const EventForm = ({ onBack }) => {
   const { event, updateEvent } = useEvent();
+  const { currentUser } = useAuth();
   const [newPerson, setNewPerson] = useState('');
+  const [newDate, setNewDate] = useState('');
+  const [newStartTime, setNewStartTime] = useState('');
+  const [newEndTime, setNewEndTime] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, this would be sent to a backend
-    console.log('Event created:', event);
+
+    if (!currentUser) {
+      alert('You must be logged in to create an event');
+      return;
+    }
+
+    try {
+      // Store topic, group size, and scheduled times
+      const eventData = {
+        topic: event.topic,
+        groupSize: event.groupSize,
+        scheduledTimes: event.scheduledTimes,
+        createdBy: currentUser,
+        createdAt: new Date().toISOString()
+      };
+
+      await addDoc(collection(db, 'events'), eventData);
+
+      // Clear the form and go back to home
+      updateEvent({
+        topic: '',
+        groupSize: 2,
+        scheduledTimes: []
+      });
+
+      alert('Event created successfully!');
+      onBack();
+    } catch (error) {
+      console.error('Error creating event:', error);
+      alert('Failed to create event. Please try again.');
+    }
   };
 
   const handleAddPerson = (e) => {
@@ -25,6 +61,51 @@ const EventForm = ({ onBack }) => {
   const handleRemovePerson = (personToRemove) => {
     updateEvent({
       includedPeople: event.includedPeople.filter(person => person !== personToRemove)
+    });
+  };
+
+  const handleAddScheduledTime = (e) => {
+    e.preventDefault();
+
+    if (!newDate || !newStartTime || !newEndTime) {
+      alert('Please fill in all date and time fields');
+      return;
+    }
+
+    if (newStartTime >= newEndTime) {
+      alert('End time must be after start time');
+      return;
+    }
+
+    const newScheduledTime = {
+      date: newDate,
+      startTime: newStartTime,
+      endTime: newEndTime
+    };
+
+    // Check if this date/time combination already exists
+    const exists = event.scheduledTimes.some(time =>
+      time.date === newDate && time.startTime === newStartTime && time.endTime === newEndTime
+    );
+
+    if (exists) {
+      alert('This date and time combination already exists');
+      return;
+    }
+
+    updateEvent({
+      scheduledTimes: [...event.scheduledTimes, newScheduledTime]
+    });
+
+    // Clear the form fields
+    setNewDate('');
+    setNewStartTime('');
+    setNewEndTime('');
+  };
+
+  const handleRemoveScheduledTime = (indexToRemove) => {
+    updateEvent({
+      scheduledTimes: event.scheduledTimes.filter((_, index) => index !== indexToRemove)
     });
   };
 
@@ -104,6 +185,57 @@ const EventForm = ({ onBack }) => {
             min="2"
             required
           />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Schedule</label>
+          <div className={styles.scheduleInputs}>
+            <input
+              type="date"
+              className={styles.input}
+              value={newDate}
+              onChange={(e) => setNewDate(e.target.value)}
+              placeholder="Select date"
+            />
+            <input
+              type="time"
+              className={styles.input}
+              value={newStartTime}
+              onChange={(e) => setNewStartTime(e.target.value)}
+              placeholder="Start time"
+            />
+            <input
+              type="time"
+              className={styles.input}
+              value={newEndTime}
+              onChange={(e) => setNewEndTime(e.target.value)}
+              placeholder="End time"
+            />
+            <button
+              type="button"
+              onClick={handleAddScheduledTime}
+              className={styles.submitButton}
+              style={{ margin: 0, padding: '8px 16px' }}
+            >
+              Add
+            </button>
+          </div>
+          <div className={styles.scheduledTimesList}>
+            {event.scheduledTimes.map((scheduledTime, index) => (
+              <div key={index} className={styles.scheduledTime}>
+                <span>
+                  {new Date(scheduledTime.date).toLocaleDateString()} • {scheduledTime.startTime} - {scheduledTime.endTime}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveScheduledTime(index)}
+                  className={styles.removeScheduledTime}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className={styles.formGroup}>

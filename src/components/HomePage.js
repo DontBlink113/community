@@ -1,13 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './HomePage.module.css';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import LoginModal from './LoginModal';
+import { db } from '../firebase';
+import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
 const HomePage = ({ onNavigateToProfile, onNavigateToEvent }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const { isLoggedIn, logout } = useAuth();
+  const [userEvents, setUserEvents] = useState([]);
+  const { isLoggedIn, logout, currentUser } = useAuth();
   const { profile } = useProfile();
+
+  // Fetch user's events when they're logged in
+  useEffect(() => {
+    const fetchUserEvents = async () => {
+      if (!currentUser) {
+        setUserEvents([]);
+        return;
+      }
+
+      try {
+        const eventsQuery = query(
+          collection(db, 'events'),
+          where('createdBy', '==', currentUser)
+        );
+
+        const querySnapshot = await getDocs(eventsQuery);
+        const events = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        // Sort by creation date (newest first) on the client side
+        events.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        setUserEvents(events);
+      } catch (error) {
+        console.error('Error fetching user events:', error);
+      }
+    };
+
+    fetchUserEvents();
+  }, [currentUser]);
+
+  const handleDeleteEvent = async (eventId) => {
+    if (!window.confirm('Are you sure you want to delete this event?')) {
+      return;
+    }
+
+    try {
+      await deleteDoc(doc(db, 'events', eventId));
+
+      // Update local state to remove the deleted event
+      setUserEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
+
+      alert('Event deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      alert('Failed to delete event. Please try again.');
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -54,13 +107,49 @@ const HomePage = ({ onNavigateToProfile, onNavigateToEvent }) => {
         </div>
       )}
       <div className={styles.createEventContainer}>
-        <button 
+        <button
           className={`${styles.button} ${styles.createEventButton}`}
           onClick={onNavigateToEvent}
         >
           Create Event
         </button>
       </div>
+
+      {isLoggedIn && userEvents.length > 0 && (
+        <div className={styles.eventsSection}>
+          <h2 className={styles.eventsTitle}>Your Events</h2>
+          <div className={styles.eventsList}>
+            {userEvents.map(event => (
+              <div key={event.id} className={styles.eventCard}>
+                <div className={styles.eventHeader}>
+                  <h3 className={styles.eventTopic}>{event.topic}</h3>
+                  <button
+                    className={styles.deleteButton}
+                    onClick={() => handleDeleteEvent(event.id)}
+                    title="Delete event"
+                  >
+                    ×
+                  </button>
+                </div>
+                <p className={styles.eventDetail}>Group Size: {event.groupSize}</p>
+                {event.scheduledTimes && event.scheduledTimes.length > 0 && (
+                  <div className={styles.scheduledTimes}>
+                    <span className={styles.scheduledTimesLabel}>Scheduled Times:</span>
+                    {event.scheduledTimes.map((time, index) => (
+                      <div key={index} className={styles.scheduledTimeItem}>
+                        {new Date(time.date).toLocaleDateString()} • {time.startTime} - {time.endTime}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className={styles.eventDate}>
+                  Created: {new Date(event.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {showLoginModal && (
         <LoginModal onClose={() => setShowLoginModal(false)} />
       )}
