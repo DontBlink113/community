@@ -127,6 +127,17 @@ export const createPlannedEvent = async (matchedEvents) => {
     const commonTimes = findCommonAvailableTimes(matchedEvents);
     const selectedMeetingTime = selectOptimalMeetingTime(commonTimes);
 
+    // Create group chat for the planned event
+    const chatRef = doc(collection(db, 'chats'));
+    const chatData = {
+      name: `${firstEvent.topic} Group Chat`,
+      participants: matchedEvents.map(event => event.createdBy),
+      createdAt: new Date().toISOString(),
+      lastActivity: new Date().toISOString(),
+      type: 'group'
+    };
+    batch.set(chatRef, chatData);
+
     const plannedEventData = {
       name: `${firstEvent.topic} Group`,
       topic: firstEvent.topic,
@@ -137,6 +148,7 @@ export const createPlannedEvent = async (matchedEvents) => {
       originalEvents: matchedEvents.map(event => event.id),
       meetingTime: selectedMeetingTime, // Single selected meeting time
       allAvailableTimes: matchedEvents.flatMap(event => event.scheduledTimes || []), // Keep original for reference
+      chatId: chatRef.id, // Link to the group chat
       createdAt: new Date().toISOString(),
       status: 'planned'
     };

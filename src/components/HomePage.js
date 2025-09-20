@@ -7,7 +7,7 @@ import { db } from '../firebase';
 import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { getUserPlannedEvents } from '../services/matchingService';
 
-const HomePage = ({ onNavigateToProfile, onNavigateToEvent }) => {
+const HomePage = ({ onNavigateToProfile, onNavigateToEvent, onNavigateToChat }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [userEvents, setUserEvents] = useState([]);
   const [plannedEvents, setPlannedEvents] = useState([]);
@@ -198,7 +198,12 @@ const HomePage = ({ onNavigateToProfile, onNavigateToEvent }) => {
           <h2 className={styles.eventsTitle}>🎯 Planned Events</h2>
           <div className={styles.eventsList}>
             {plannedEvents.map(event => (
-              <div key={event.id} className={styles.plannedEventCard}>
+              <div
+                key={event.id}
+                className={styles.plannedEventCard}
+                onClick={() => onNavigateToChat && event.chatId && onNavigateToChat(event.chatId)}
+                style={{ cursor: event.chatId ? 'pointer' : 'default' }}
+              >
                 <div className={styles.eventHeader}>
                   <h3 className={styles.eventTopic}>{event.name}</h3>
                   <span className={styles.participantBadge}>
@@ -221,6 +226,11 @@ const HomePage = ({ onNavigateToProfile, onNavigateToEvent }) => {
                 <p className={styles.eventDate}>
                   Planned: {new Date(event.createdAt).toLocaleDateString()}
                 </p>
+                {event.chatId && (
+                  <div className={styles.chatIndicator}>
+                    💬 Click to open group chat
+                  </div>
+                )}
               </div>
             ))}
           </div>
