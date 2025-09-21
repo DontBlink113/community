@@ -275,11 +275,15 @@ const EventForm = ({ onBack }) => {
                 {event.scheduledTimes.map((time, index) => (
                   <div key={index} className={styles.scheduledTime}>
                     <span>
-                      {new Date(time.date).toLocaleDateString('en-US', { 
-                        weekday: 'short', 
-                        month: 'short', 
-                        day: 'numeric' 
-                      })} • {time.startTime} - {time.endTime}
+                      {(() => {
+                        const [year, month, day] = time.date.split('-');
+                        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                        return date.toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          month: 'short',
+                          day: 'numeric'
+                        });
+                      })()} • {time.startTime} - {time.endTime}
                     </span>
                     <button
                       type="button"
