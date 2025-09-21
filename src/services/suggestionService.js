@@ -16,12 +16,29 @@ export const getEventSuggestions = async (currentUserUsername, userLocation) => 
       ...doc.data()
     }));
 
+    // Get user's sub-events (events they created by joining suggestions)
+    const userSubEventsQuery = query(
+      collection(db, 'events'),
+      where('createdBy', '==', currentUserUsername),
+      where('basedOnSuggestion', '!=', null)
+    );
+
+    const userSubEventsSnapshot = await getDocs(userSubEventsQuery);
+    const userJoinedSuggestionIds = new Set(
+      userSubEventsSnapshot.docs.map(doc => doc.data().basedOnSuggestion)
+    );
+
     // Filter events that could be suggested
     const suggestions = [];
 
     for (const event of allEvents) {
       // Skip sub-events (events created from joining suggestions)
       if (event.basedOnSuggestion) {
+        continue;
+      }
+
+      // Skip events the user has already joined via suggestions
+      if (userJoinedSuggestionIds.has(event.id)) {
         continue;
       }
 
