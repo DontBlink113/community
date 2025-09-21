@@ -1,60 +1,105 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import LandingPage from './components/LandingPage';
 import HomePage from './components/HomePage';
 import ProfilePage from './components/ProfilePage';
 import EventForm from './components/EventForm';
 import Chat from './components/Chat';
 import MyEvents from './components/MyEvents';
-import { AuthProvider } from './context/AuthContext';
+import LoginPage from './components/LoginPage';
+import SignupPage from './components/SignupPage';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProfileProvider } from './context/ProfileContext';
 import { EventProvider } from './context/EventContext';
 import './firebase';  // This initializes Firebase
 
-function App() {
-  const [currentPage, setCurrentPage] = useState('home');
-  const [currentChatId, setCurrentChatId] = useState(null);
-  const [previousPage, setPreviousPage] = useState('home');
+// Protected Route component
+const ProtectedRoute = ({ children }) => {
+  const { isLoggedIn } = useAuth();
+  const location = useLocation();
+
+  if (!isLoggedIn) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+};
+
+// App Content with routing
+const AppContent = () => {
+  const [previousPage, setPreviousPage] = useState('/');
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Update previous page when location changes
+    if (location.pathname !== '/login' && location.pathname !== '/') {
+      setPreviousPage(location.pathname);
+    }
+  }, [location]);
 
   const handleNavigateToChat = (chatId) => {
-    setPreviousPage(currentPage);
-    setCurrentChatId(chatId);
-    setCurrentPage('chat');
-  };
-
-  const handleBackFromChat = () => {
-    setCurrentChatId(null);
-    setCurrentPage(previousPage);
-  };
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'profile':
-        return <ProfilePage onBack={() => setCurrentPage('home')} />;
-      case 'event':
-        return <EventForm onBack={() => setCurrentPage('home')} />;
-      case 'chat':
-        return <Chat chatId={currentChatId} onBack={handleBackFromChat} />;
-      case 'myEvents':
-        return <MyEvents
-          onBack={() => setCurrentPage('home')}
-          onNavigateToChat={handleNavigateToChat}
-        />;
-      default:
-        return <HomePage
-          onNavigateToProfile={() => setCurrentPage('profile')}
-          onNavigateToEvent={() => setCurrentPage('event')}
-          onNavigateToMyEvents={() => setCurrentPage('myEvents')}
-        />;
-    }
+    navigate(`/chat/${chatId}`);
   };
 
   return (
-    <AuthProvider>
-      <ProfileProvider>
-        <EventProvider>
-          {renderPage()}
-        </EventProvider>
-      </ProfileProvider>
-    </AuthProvider>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+      
+      {/* Protected Routes */}
+      <Route path="/home" element={
+        <ProtectedRoute>
+          <HomePage />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <ProfilePage />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/event" element={
+        <ProtectedRoute>
+          <EventForm onBack={() => navigate(-1)} />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/chat/:chatId" element={
+        <ProtectedRoute>
+          <Chat onBack={() => navigate(previousPage || '/home')} />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/my-events" element={
+        <ProtectedRoute>
+          <MyEvents onNavigateToChat={handleNavigateToChat} />
+        </ProtectedRoute>
+      } />
+      
+      {/* Redirect any unknown routes to home */}
+      <Route path="*" element={
+        <ProtectedRoute>
+          <Navigate to="/home" replace />
+        </ProtectedRoute>
+      } />
+    </Routes>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <ProfileProvider>
+          <EventProvider>
+            <AppContent />
+          </EventProvider>
+        </ProfileProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

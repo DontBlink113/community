@@ -1,0 +1,67 @@
+:root {
+  /* Teal Colors */
+  --teal-50: hsl(173, 61%, 92%);
+  --teal-100: hsl(180, 70%, 88%);
+  --teal-200: hsl(174, 59%, 73%);
+  --teal-300: hsl(178, 60%, 55%);
+  --teal-400: hsl(177, 70%, 41%);
+  --teal-500: hsl(180, 100%, 27%);
+  --teal-600: hsl(180, 100%, 25%);
+  --teal-700: hsl(180, 100%, 21%);
+
+  /* Grey Colors */
+  --grey-50: hsl(210, 20%, 98%);
+  --grey-100: hsl(220, 14%, 96%);
+  --grey-200: hsl(223, 14%, 90%);
+  --grey-300: hsl(222, 10%, 80%);
+  --grey-400: hsl(221, 9%, 65%);
+  --grey-500: hsl(220, 8%, 45%);
+  --grey-600: hsl(222, 8%, 30%);
+  --grey-700: hsl(224, 14%, 15%);
+
+  /* Accent Colors */
+  --red-100: hsl(0, 80%, 95%);
+  --red-400: hsl(0, 75%, 60%);
+  --red-600: hsl(0, 70%, 40%);
+  
+  --yellow-100: hsl(50, 90%, 95%);
+  --yellow-400: hsl(45, 90%, 50%);
+  --yellow-600: hsl(40, 90%, 40%);
+  
+  --orange-400: hsl(25, 90%, 55%);
+  --green-400: hsl(140, 60%, 50%);
+
+  /* Semantic Colors */
+  --primary: var(--teal-300);
+  --primary-light: var(--teal-100);
+  --primary-dark: var(--teal-500);
+  
+  --text-primary: var(--grey-700);
+  --text-secondary: var(--grey-500);
+  --text-disabled: var(--grey-400);
+  
+  --background: var(--grey-50);
+  --surface: white;
+  --border: var(--grey-200);
+  
+  --error: var(--red-400);
+  --warning: var(--yellow-400);
+  --success: var(--green-400);
+
+  /* Login Page Specific */
+  --login-bg: var(--grey-50);
+  --login-card-bg: var(--surface);
+  --login-text: var(--grey-700);
+  --login-input-bg: var(--grey-50);
+  --login-input-border: var(--grey-200);
+  --login-input-focus: var(--primary);
+  --login-button-bg: var(--primary);
+  --login-button-hover: var(--primary-dark);
+  --login-button-text: white;
+  --login-divider: var(--grey-200);
+  --login-link: var(--primary);
+  --login-link-hover: var(--primary-dark);
+  --login-error-bg: var(--red-100);
+  --login-error-text: var(--red-600);
+  --login-error-border: var(--red-400);
+}

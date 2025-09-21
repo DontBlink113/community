@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useProfile } from '../context/ProfileContext';
 import { useAuth } from '../context/AuthContext';
 import styles from './ProfilePage.module.css';
 import { db, storage } from '../firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import Navbar from './Navbar';
 
 const ProfilePage = ({ onBack }) => {
   const { profile, updateProfile } = useProfile();
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [newInterest, setNewInterest] = useState('');
   const [tempImage, setTempImage] = useState(null);
@@ -121,20 +124,18 @@ const ProfilePage = ({ onBack }) => {
   };
 
   return (
-    <div className={styles.container}>
-      <button
-        className={styles.backButton}
-        onClick={onBack}
-      >
-        Back to Home
-      </button>
-      <h1 className={styles.title}>{isEditing ? 'Edit Profile' : 'Profile'}</h1>
-      <button
-        className={styles.editButton}
-        onClick={handleEditToggle}
-      >
-{isEditing ? 'Stop Editing' : 'Edit Profile'}
-      </button>
+    <div>
+      <Navbar />
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>{isEditing ? 'Edit Profile' : 'Profile'}</h1>
+          <button
+            className={styles.editButton}
+            onClick={handleEditToggle}
+          >
+            {isEditing ? 'Stop Editing' : 'Edit Profile'}
+          </button>
+        </div>
       {isEditing ? (
         <div className={styles.form}>
         <div className={styles.imageUpload}>
@@ -232,6 +233,19 @@ const ProfilePage = ({ onBack }) => {
           </div>
         </div>
       )}
+      
+      <div className={styles.logoutContainer}>
+        <button 
+          onClick={async () => {
+            await logout();
+            navigate('/');
+          }}
+          className={styles.logoutButton}
+        >
+          Logout
+        </button>
+      </div>
+      </div>
     </div>
   );
 };

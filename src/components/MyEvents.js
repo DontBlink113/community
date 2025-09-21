@@ -6,6 +6,7 @@ import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/fire
 import { getUserPlannedEvents } from '../services/matchingService';
 import Calendar from './Calendar';
 import EventDetailPopup from './EventDetailPopup';
+import Navbar from './Navbar';
 
 const MyEvents = ({ onBack, onNavigateToChat }) => {
   const [userEvents, setUserEvents] = useState([]);
@@ -97,14 +98,9 @@ const MyEvents = ({ onBack, onNavigateToChat }) => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <button className={styles.backButton} onClick={onBack}>
-          ← Back to Home
-        </button>
-        <h1 className={styles.title}>My Events</h1>
-      </div>
-
+      <Navbar />
       <div className={styles.content}>
+        <h1 className={styles.title}>My Events</h1>
         <div className={styles.eventsSection}>
           <div className={styles.eventsList}>
             {/* Unplanned Events */}

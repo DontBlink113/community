@@ -367,23 +367,7 @@ const EventForm = ({ onBack }) => {
             />
             <input
               type="time"
-              className={styles.input}
-              value={newEndTime}
-              onChange={(e) => setNewEndTime(e.target.value)}
-              placeholder="End time"
-            />
-            <button
-              type="button"
-              onClick={handleAddScheduledTime}
-              className={styles.addButton}
-            >
-              Add Time
-            </button>
-          </div>
-          <div className={styles.scheduledTimesList}>
-            {event.scheduledTimes.map((time, index) => (
-              <div key={index} className={styles.scheduledTime}>
-                <span>{time.date} {time.startTime} - {time.endTime}</span>
+                </span>
                 <button
                   type="button"
                   onClick={() => handleRemoveScheduledTime(index)}
