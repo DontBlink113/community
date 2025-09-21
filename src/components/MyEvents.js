@@ -99,8 +99,10 @@ const MyEvents = ({ onBack, onNavigateToChat }) => {
   return (
     <div className={styles.container}>
       <Navbar />
-      <div className={styles.content}>
+      <div className={styles.titleSection}>
         <h1 className={styles.title}>My Events</h1>
+      </div>
+      <div className={styles.content}>
         <div className={styles.eventsSection}>
           <div className={styles.eventsList}>
             {/* Unplanned Events */}

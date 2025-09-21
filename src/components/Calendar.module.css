@@ -81,19 +81,19 @@
 }
 
 .plannedDay {
-  background-color: #d4edda !important;
-  color: #2c5530;
+  background-color: hsl(178, 60%, 95%) !important;
+  color: hsl(178, 60%, 35%);
   font-weight: 600;
 }
 
 .pendingDay {
-  background-color: #fff3cd !important;
-  color: #856404;
+  background-color: hsl(45, 93%, 94%) !important;
+  color: hsl(45, 93%, 30%);
   font-weight: 600;
 }
 
 .mixedDay {
-  background: linear-gradient(45deg, #fff3cd 50%, #d4edda 50%) !important;
+  background: linear-gradient(45deg, hsl(45, 93%, 94%) 50%, hsl(178, 60%, 95%) 50%) !important;
   color: #333;
   font-weight: 600;
 }
@@ -122,15 +122,15 @@
 }
 
 .plannedColor {
-  background-color: #d4edda;
+  background-color: hsl(178, 60%, 95%);
 }
 
 .pendingColor {
-  background-color: #fff3cd;
+  background-color: hsl(45, 93%, 94%);
 }
 
 .mixedColor {
-  background: linear-gradient(45deg, #fff3cd 50%, #d4edda 50%);
+  background: linear-gradient(45deg, hsl(45, 93%, 94%) 50%, hsl(178, 60%, 95%) 50%);
 }
 
 /* Mobile responsiveness */
