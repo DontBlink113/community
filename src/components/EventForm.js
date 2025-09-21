@@ -43,7 +43,7 @@ const EventForm = ({ onBack }) => {
         scheduledTimes: event.scheduledTimes,
         location: event.location,
         suggestedLocation: event.suggestedLocation,
-        createdBy: currentUser,
+        createdBy: currentUser.username,
         createdAt: new Date().toISOString()
       };
 

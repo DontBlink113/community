@@ -133,10 +133,57 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.clickableCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  border-left-color: hsl(178, 60%, 45%);
+}
+
+.chatHint {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: hsl(178, 60%, 95%);
+  color: hsl(178, 60%, 40%);
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.deleteButton {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, transform 0.1s;
+  flex-shrink: 0;
+}
+
+.deleteButton:hover {
+  background-color: #c0392b;
+  transform: scale(1.1);
+}
+
+.eventHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
 .eventCard h3 {
   color: hsl(220, 8%, 30%);
-  margin: 0 0 0.5rem 0;
+  margin: 0;
   font-size: 1.1rem;
+  flex: 1;
 }
 
 .eventCard p {

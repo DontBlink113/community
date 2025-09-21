@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import styles from './Chat.module.css';
@@ -14,7 +15,9 @@ import {
   updateDoc
 } from 'firebase/firestore';
 
-const Chat = ({ chatId, onBack }) => {
+const Chat = ({ onBack }) => {
+  const { chatId } = useParams();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [chatInfo, setChatInfo] = useState(null);
@@ -83,7 +86,7 @@ const Chat = ({ chatId, onBack }) => {
     try {
       await addDoc(collection(db, 'messages'), {
         text: newMessage.trim(),
-        senderId: currentUser,
+        senderId: currentUser.username,
         senderName: profile.name || 'Anonymous',
         chatId: chatId,
         createdAt: new Date().toISOString()
@@ -116,7 +119,7 @@ const Chat = ({ chatId, onBack }) => {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
-          <button className={styles.backButton} onClick={onBack}>
+          <button className={styles.backButton} onClick={onBack || (() => navigate(-1))}>
             ← Back
           </button>
           <h2>Loading...</h2>
@@ -128,7 +131,7 @@ const Chat = ({ chatId, onBack }) => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <button className={styles.backButton} onClick={onBack}>
+        <button className={styles.backButton} onClick={onBack || (() => navigate(-1))}>
           ← Back
         </button>
         <div className={styles.chatTitle}>
@@ -149,7 +152,7 @@ const Chat = ({ chatId, onBack }) => {
             <div
               key={message.id}
               className={`${styles.message} ${
-                message.senderId === currentUser ? styles.ownMessage : styles.otherMessage
+                message.senderId === currentUser.username ? styles.ownMessage : styles.otherMessage
               }`}
             >
               <div className={styles.messageHeader}>

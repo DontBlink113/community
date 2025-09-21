@@ -37,7 +37,7 @@ const MyEvents = ({ onBack, onNavigateToChat }) => {
         // Fetch regular events
         const eventsQuery = query(
           collection(db, 'events'),
-          where('createdBy', '==', currentUser)
+          where('createdBy', '==', currentUser.username)
         );
 
         const querySnapshot = await getDocs(eventsQuery);
@@ -50,7 +50,7 @@ const MyEvents = ({ onBack, onNavigateToChat }) => {
         setUserEvents(events);
 
         // Fetch planned events
-        const plannedEventsData = await getUserPlannedEvents(currentUser);
+        const plannedEventsData = await getUserPlannedEvents(currentUser.username);
         plannedEventsData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setPlannedEvents(plannedEventsData);
 

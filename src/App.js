@@ -27,18 +27,24 @@ const ProtectedRoute = ({ children }) => {
 
 // App Content with routing
 const AppContent = () => {
-  const [previousPage, setPreviousPage] = useState('/');
+  const [previousPage, setPreviousPage] = useState('/home');
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Update previous page when location changes
-    if (location.pathname !== '/login' && location.pathname !== '/') {
+    // Only update previous page if we're not on a chat page and not on login/landing
+    if (!location.pathname.startsWith('/chat') &&
+        location.pathname !== '/login' &&
+        location.pathname !== '/') {
       setPreviousPage(location.pathname);
     }
   }, [location]);
 
   const handleNavigateToChat = (chatId) => {
+    // Store current page before navigating to chat
+    if (!location.pathname.startsWith('/chat')) {
+      setPreviousPage(location.pathname);
+    }
     navigate(`/chat/${chatId}`);
   };
 

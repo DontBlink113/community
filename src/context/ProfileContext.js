@@ -16,19 +16,26 @@ export const ProfileProvider = ({ children }) => {
   // Load profile from Firestore when user changes
   useEffect(() => {
     const loadProfile = async () => {
-      if (!currentUser) {
+      if (!currentUser || !currentUser.username) {
         setProfile({ name: '', interests: [], profilePicture: null });
         return;
       }
 
       try {
-        const profileDoc = await getDoc(doc(db, 'profiles', currentUser));
+        const profileDoc = await getDoc(doc(db, 'profiles', currentUser.username));
         if (profileDoc.exists()) {
           const data = profileDoc.data();
           setProfile({
             name: data.name || '',
             interests: data.interests || [],
             profilePicture: data.profilePicture || null
+          });
+        } else {
+          // If no separate profile document exists, use data from the user object
+          setProfile({
+            name: currentUser.profile?.name || currentUser.username || '',
+            interests: currentUser.profile?.interests || [],
+            profilePicture: currentUser.profile?.profilePicture || null
           });
         }
       } catch (error) {
@@ -40,15 +47,15 @@ export const ProfileProvider = ({ children }) => {
   }, [currentUser]);
 
   const updateProfile = async (newProfile) => {
-    if (!currentUser) return;
+    if (!currentUser || !currentUser.username) return;
 
     try {
       const updatedProfile = { ...profile, ...newProfile };
-      await setDoc(doc(db, 'profiles', currentUser), {
+      await setDoc(doc(db, 'profiles', currentUser.username), {
         ...updatedProfile,
         updatedAt: new Date().toISOString()
       }, { merge: true });
-      
+
       setProfile(updatedProfile);
     } catch (error) {
       console.error('Error updating profile:', error);
