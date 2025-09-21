@@ -56,7 +56,7 @@ const Navbar = () => {
     logoText: {
       fontSize: '1.5rem',
       fontWeight: 900,
-      background: 'linear-gradient(90deg, #0E7C7B 0%, #FF00FF 100%)',
+      background: 'linear-gradient(90deg, hsl(178, 86%, 45%) 0%, hsl(300, 100%, 50%) 100%)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
       backgroundClip: 'text',
@@ -99,15 +99,12 @@ const Navbar = () => {
               style={styles.logo} 
               onClick={() => navigate('/home')}
               onMouseEnter={(e) => {
-                e.target.style.background = 'linear-gradient(90deg, hsl(178, 86%, 55%) 0%, hsl(300, 100%, 60%) 100%)';
-                e.target.style.backgroundClip = 'text';
-                e.target.style.WebkitBackgroundClip = 'text';
+                e.target.style.backgroundPosition = '100% 0%';
                 e.target.style.backgroundSize = '200% 100%';
               }}
               onMouseLeave={(e) => {
-                e.target.style.background = 'linear-gradient(90deg, hsl(178, 86%, 45%) 0%, hsl(300, 100%, 50%) 100%)';
-                e.target.style.backgroundClip = 'text';
-                e.target.style.WebkitBackgroundClip = 'text';
+                e.target.style.backgroundPosition = '0% 0%';
+                e.target.style.backgroundSize = '200% 100%';
               }}
             >
               Community

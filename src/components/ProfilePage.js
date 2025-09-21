@@ -3,113 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import { useProfile } from '../context/ProfileContext';
 import { useAuth } from '../context/AuthContext';
 import styles from './ProfilePage.module.css';
-import { db, storage } from '../firebase';
+import { db } from '../firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import Navbar from './Navbar';
+import Footer from './Footer';
 
-const ProfilePage = ({ onBack }) => {
+const ProfilePage = () => {
+  const navigate = useNavigate();
   const { profile, updateProfile } = useProfile();
   const { currentUser, logout } = useAuth();
-  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  const [newInterest, setNewInterest] = useState('');
-  const [tempImage, setTempImage] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      try {
-        setTempImage(URL.createObjectURL(file));
-
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          try {
-            // Upload to Firebase Storage with unique filename
-            const fileName = `${Date.now()}-${file.name}`;
-            const imageRef = ref(storage, `profilePictures/${currentUser}/${fileName}`);
-            await uploadString(imageRef, reader.result, 'data_url');
-            const downloadUrl = await getDownloadURL(imageRef);
-            
-            // Update Firestore and local state
-            const userDocRef = doc(db, 'profiles', currentUser);
-            await setDoc(userDocRef, {
-              ...profile,
-              profilePicture: downloadUrl,
-              updatedAt: new Date().toISOString()
-            }, { merge: true });
-            
-            updateProfile({ profilePicture: downloadUrl });
-          } catch (error) {
-            console.error('Error saving image:', error);
-            alert('Failed to upload image. Please try again.');
-          }
-        };
-        reader.readAsDataURL(file);
-      } catch (error) {
-        console.error('Error handling image:', error);
-        alert('Failed to process image. Please try again.');
-      }
-    }
-  };
-
-  const handleAddInterest = async (e) => {
-    e.preventDefault();
-    const trimmedInterest = newInterest.trim();
-    if (trimmedInterest && !profile.interests.includes(trimmedInterest)) {
-      const updatedInterests = [...profile.interests, trimmedInterest];
-      try {
-        const userDocRef = doc(db, 'profiles', currentUser);
-        await setDoc(userDocRef, {
-          interests: updatedInterests,
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
-        
-        updateProfile({
-          interests: updatedInterests
-        });
-        setNewInterest('');
-      } catch (error) {
-        console.error('Error saving interest:', error);
-        alert('Failed to add interest. Please try again.');
-      }
-    }
-  };
-
-  const handleRemoveInterest = async (interest) => {
-    try {
-      const updatedInterests = profile.interests.filter(i => i !== interest);
-      const userDocRef = doc(db, 'profiles', currentUser);
-      await setDoc(userDocRef, {
-        interests: updatedInterests,
-        updatedAt: new Date().toISOString()
-      }, { merge: true });
-
-      updateProfile({
-        interests: updatedInterests
-      });
-    } catch (error) {
-      console.error('Error removing interest:', error);
-      alert('Failed to remove interest. Please try again.');
-    }
-  };
-
-
-  // Load profile data when component mounts
   useEffect(() => {
     const loadProfile = async () => {
       if (!currentUser) return;
       
       try {
-        const userDocRef = doc(db, 'profiles', currentUser);
-        const docSnap = await getDoc(userDocRef);
-        
-        if (docSnap.exists()) {
-          const data = docSnap.data();
+        const userDoc = await getDoc(doc(db, 'profiles', currentUser));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
           updateProfile({
-            name: data.name,
-            interests: data.interests || [],
-            profilePicture: data.profilePicture
+            name: data.name || ''
           });
         }
       } catch (error) {
@@ -119,133 +34,116 @@ const ProfilePage = ({ onBack }) => {
 
     loadProfile();
   }, [currentUser, updateProfile]);
-  const handleEditToggle = () => {
-    setIsEditing(!isEditing);
+
+  const handleSaveProfile = async () => {
+    if (!profile || isSaving) return;
+    
+    setIsSaving(true);
+    try {
+      await setDoc(
+        doc(db, 'profiles', currentUser),
+        { 
+          name: profile.name,
+          updatedAt: new Date().toISOString() 
+        },
+        { merge: true }
+      );
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
+  const handleLogout = async () => {
+    if (window.confirm('Are you sure you want to log out?')) {
+      try {
+        await logout();
+        navigate('/');
+      } catch (error) {
+        console.error('Error during logout:', error);
+        alert('Failed to log out. Please try again.');
+      }
+    }
+  };
+
+  if (!profile) {
+    return <div className={styles.loading}>Loading profile...</div>;
+  }
+
   return (
-    <div>
+    <div className={styles.container}>
       <Navbar />
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>{isEditing ? 'Edit Profile' : 'Profile'}</h1>
-          <button
-            className={styles.editButton}
-            onClick={handleEditToggle}
-          >
-            {isEditing ? 'Stop Editing' : 'Edit Profile'}
-          </button>
-        </div>
-      {isEditing ? (
-        <div className={styles.form}>
-        <div className={styles.imageUpload}>
-          <img
-            src={tempImage || profile.profilePicture || '/default-avatar.png'}
-            alt="Profile"
-            className={styles.profileImage}
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            id="imageUpload"
-            hidden
-          />
-          <label htmlFor="imageUpload" className={styles.uploadButton}>
-            Upload Profile Picture
-          </label>
-        </div>
-
-        <div className={styles.inputGroup}>
-          <label className={styles.label}>Name</label>
-          <input
-            type="text"
-            value={profile.name}
-            onChange={(e) => updateProfile({ name: e.target.value })}
-            className={styles.input}
-            placeholder="Enter your name"
-          />
-        </div>
-
-        <div className={styles.inputGroup}>
-          <label className={styles.label}>Interests</label>
-          <div className={styles.interests}>
-            {profile.interests.map((interest) => (
-              <div key={interest} className={styles.interest}>
-                {interest}
+      <main className={styles.mainContent}>
+        <div className={styles.contentWrapper}>
+          <div className={styles.profileSection}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>
+                {isEditing ? 'Edit Profile' : 'My Profile'}
+              </h2>
+              <div className={styles.buttonGroup}>
                 <button
-                  type="button"
-                  onClick={() => handleRemoveInterest(interest)}
-                  className={styles.removeInterest}
+                  className={`${styles.button} ${
+                    isEditing ? styles.secondaryButton : styles.primaryButton
+                  }`}
+                  onClick={() => setIsEditing(!isEditing)}
+                  disabled={isSaving}
                 >
-                  ×
+                  {isEditing ? 'Cancel' : 'Edit Profile'}
                 </button>
+                {isEditing && (
+                  <button
+                    className={`${styles.button} ${styles.primaryButton}`}
+                    onClick={handleSaveProfile}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                  </button>
+                )}
               </div>
-            ))}
+            </div>
+
+            {isEditing ? (
+              <div className={styles.form}>
+                <div className={styles.inputGroup}>
+                  <label className={styles.label}>Name</label>
+                  <input
+                    type="text"
+                    value={profile.name || ''}
+                    onChange={(e) =>
+                      updateProfile({ ...profile, name: e.target.value })
+                    }
+                    className={styles.input}
+                    placeholder="Enter your name"
+                    disabled={isSaving}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className={styles.viewMode}>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Name:</span>
+                  <span className={styles.infoValue}>
+                    {profile.name || 'Not set'}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <input
-              type="text"
-              value={newInterest}
-              onChange={(e) => setNewInterest(e.target.value)}
-              className={styles.input}
-              placeholder="Add an interest"
-            />
+          
+          <div className={styles.logoutContainer}>
             <button
-              type="button"
-              onClick={handleAddInterest}
-              className={styles.uploadButton}
+              onClick={handleLogout}
+              className={styles.logoutButton}
+              disabled={isSaving}
             >
-              Add
+              Logout
             </button>
           </div>
         </div>
-
-        </div>
-      ) : (
-        <div className={styles.viewMode}>
-          <div className={styles.imageUpload}>
-            <img
-              src={profile.profilePicture || '/default-avatar.png'}
-              alt="Profile"
-              className={styles.profileImage}
-            />
-          </div>
-          
-          <div className={styles.viewField}>
-            <span className={styles.viewLabel}>Name</span>
-            <span className={styles.viewValue}>{profile.name || 'Not set'}</span>
-          </div>
-
-          <div className={styles.viewField}>
-            <span className={styles.viewLabel}>Interests</span>
-            <div className={styles.viewInterests}>
-              {profile.interests.length > 0 ? (
-                profile.interests.map((interest) => (
-                  <div key={interest} className={styles.viewInterest}>
-                    {interest}
-                  </div>
-                ))
-              ) : (
-                <span className={styles.viewValue}>No interests added</span>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-      
-      <div className={styles.logoutContainer}>
-        <button 
-          onClick={async () => {
-            await logout();
-            navigate('/');
-          }}
-          className={styles.logoutButton}
-        >
-          Logout
-        </button>
-      </div>
-      </div>
+      </main>
+      <Footer />
     </div>
   );
 };

@@ -1,0 +1,255 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useProfile } from '../context/ProfileContext';
+import { useAuth } from '../context/AuthContext';
+import styles from './ProfilePage.module.css';
+import { db } from '../firebase';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import Navbar from './Navbar';
+import Footer from './Footer';
+
+const ProfilePage = () => {
+  const navigate = useNavigate();
+  const { profile, updateProfile } = useProfile();
+  const { currentUser, logout } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+  const [newInterest, setNewInterest] = useState('');
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (currentUser) {
+        try {
+          const userDoc = await getDoc(doc(db, 'profiles', currentUser));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            updateProfile({
+              name: data.name || '',
+              email: data.email || '',
+              interests: data.interests || [],
+            });
+          }
+        } catch (error) {
+          console.error('Error loading profile:', error);
+        }
+      }
+    };
+
+    loadProfile();
+  }, [currentUser, updateProfile]);
+
+  const handleAddInterest = async (e) => {
+    e.preventDefault();
+    const trimmedInterest = newInterest.trim();
+    if (trimmedInterest && !profile.interests?.includes(trimmedInterest)) {
+      const updatedInterests = [...(profile.interests || []), trimmedInterest];
+      try {
+        const userDocRef = doc(db, 'profiles', currentUser);
+        await setDoc(userDocRef, {
+          interests: updatedInterests,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+        updateProfile({ ...profile, interests: updatedInterests });
+        setNewInterest('');
+      } catch (error) {
+        console.error('Error adding interest:', error);
+        alert('Failed to add interest. Please try again.');
+      }
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      if (currentUser) {
+        await setDoc(doc(db, 'profiles', currentUser), {
+          ...profile,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+      }
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('Failed to save profile. Please try again.');
+    }
+  };
+        
+        updateProfile({
+          interests: updatedInterests
+        });
+        setNewInterest('');
+      } catch (error) {
+        console.error('Error saving interest:', error);
+        alert('Failed to add interest. Please try again.');
+      }
+    }
+  };
+
+  const handleRemoveInterest = async (interest) => {
+    try {
+      const updatedInterests = profile.interests.filter(i => i !== interest);
+      const userDocRef = doc(db, 'profiles', currentUser);
+      await setDoc(userDocRef, {
+        interests: updatedInterests,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+      updateProfile({ ...profile, interests: updatedInterests });
+    } catch (error) {
+      console.error('Error removing interest:', error);
+      alert('Failed to remove interest. Please try again.');
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      if (currentUser) {
+        await setDoc(doc(db, 'profiles', currentUser), {
+          ...profile,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+      }
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('Failed to save profile. Please try again.');
+    }
+  };
+
+  return (
+    <div className={styles.container}>
+      <Navbar />
+      <main className={styles.mainContent}>
+        <div className={styles.contentWrapper}>
+          <div className={styles.profileSection}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>
+                {isEditing ? 'Edit Profile' : 'My Profile'}
+              </h2>
+              <div className={styles.buttonGroup}>
+                <button
+                  className={`${styles.button} ${isEditing ? styles.secondaryButton : styles.primaryButton}`}
+                  onClick={() => setIsEditing(!isEditing)}
+                >
+                  {isEditing ? 'Cancel' : 'Edit Profile'}
+                </button>
+                {isEditing && (
+                  <button
+                    className={`${styles.button} ${styles.primaryButton}`}
+                    onClick={handleSaveProfile}
+                  >
+                    Save Changes
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {isEditing ? (
+              <div className={styles.form}>
+                <div className={styles.inputGroup}>
+                  <label className={styles.label}>Name</label>
+                  <input
+                    type="text"
+                    value={profile?.name || ''}
+                    onChange={(e) => updateProfile({ ...profile, name: e.target.value })}
+                    className={styles.input}
+                    placeholder="Enter your name"
+                  />
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label className={styles.label}>Email</label>
+                  <input
+                    type="email"
+                    value={profile?.email || ''}
+                    onChange={(e) => updateProfile({ ...profile, email: e.target.value })}
+                    className={styles.input}
+                    placeholder="Enter your email"
+                  />
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label className={styles.label}>Interests</label>
+                  <div className={styles.interestsList}>
+                    {profile?.interests?.map((interest, index) => (
+                      <span key={index} className={styles.interestTag}>
+                        {interest}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updatedInterests = [...profile.interests];
+                            updatedInterests.splice(index, 1);
+                            updateProfile({ ...profile, interests: updatedInterests });
+                          }}
+                          className={styles.removeInterest}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className={styles.addInterest}>
+                    <input
+                      type="text"
+                      value={newInterest}
+                      onChange={(e) => setNewInterest(e.target.value)}
+                      className={styles.input}
+                      placeholder="Add an interest"
+                      onKeyPress={(e) => e.key === 'Enter' && handleAddInterest(e)}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddInterest}
+                      className={styles.addButton}
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.viewMode}>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Name:</span>
+                  <span className={styles.infoValue}>{profile?.name || 'Not set'}</span>
+                </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Email:</span>
+                  <span className={styles.infoValue}>{profile?.email || 'Not set'}</span>
+                </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Interests:</span>
+                  <div className={styles.interestsList}>
+                    {profile?.interests?.length > 0 ? (
+                      profile.interests.map((interest, index) => (
+                        <span key={index} className={styles.interestTag}>
+                          {interest}
+                        </span>
+                      ))
+                    ) : (
+                      <span className={styles.noInterests}>No interests added yet</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className={styles.logoutContainer}>
+            <button
+              onClick={async () => {
+                if (window.confirm('Are you sure you want to log out?')) {
+                  await logout();
+                  navigate('/');
+                }
+              }}
+              className={styles.logoutButton}
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+export default ProfilePage;

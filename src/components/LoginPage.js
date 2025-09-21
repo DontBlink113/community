@@ -32,6 +32,7 @@ const LoginPage = () => {
 
   const styles = {
     loginContainer: {
+      position: 'relative',
       display: 'flex',
       flexDirection: 'column',
       minHeight: '100vh',
@@ -71,11 +72,25 @@ const LoginPage = () => {
       textAlign: 'center',
     },
     logo: {
-      color: 'var(--primary)',
-      fontSize: '2rem',
+      position: 'absolute',
+      top: '20px',
+      left: '20px',
+      fontSize: '1.8rem',
+      lineHeight: '1.2',
       fontWeight: '700',
-      marginBottom: '1.5rem',
-      display: 'block',
+      background: 'linear-gradient(90deg, hsl(178, 86%, 45%) 0%, hsl(300, 100%, 50%) 100%)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      backgroundClip: 'text',
+      textFillColor: 'transparent',
+      textDecoration: 'none',
+      cursor: 'pointer',
+      margin: 0,
+      padding: '0.25rem 0',
+      border: 'none',
+      zIndex: 10,
+      display: 'inline-block',
+      height: 'auto',
     },
     title: {
       color: 'var(--login-text)',
@@ -160,7 +175,7 @@ const LoginPage = () => {
     <div style={styles.loginContainer}>
       <button 
         onClick={() => navigate(currentUser ? '/home' : '/')}
-        style={styles.titleButton}
+        style={styles.logo}
       >
         Community
       </button>
