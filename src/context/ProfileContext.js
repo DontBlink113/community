@@ -10,14 +10,28 @@ export const ProfileProvider = ({ children }) => {
   const [profile, setProfile] = useState({
     name: '',
     interests: [],
-    profilePicture: null
+    profilePicture: null,
+    location: {
+      address: '',
+      latitude: null,
+      longitude: null
+    }
   });
 
   // Load profile from Firestore when user changes
   useEffect(() => {
     const loadProfile = async () => {
       if (!currentUser || !currentUser.username) {
-        setProfile({ name: '', interests: [], profilePicture: null });
+        setProfile({
+          name: '',
+          interests: [],
+          profilePicture: null,
+          location: {
+            address: '',
+            latitude: null,
+            longitude: null
+          }
+        });
         return;
       }
 
@@ -28,14 +42,24 @@ export const ProfileProvider = ({ children }) => {
           setProfile({
             name: data.name || '',
             interests: data.interests || [],
-            profilePicture: data.profilePicture || null
+            profilePicture: data.profilePicture || null,
+            location: data.location || {
+              address: '',
+              latitude: null,
+              longitude: null
+            }
           });
         } else {
           // If no separate profile document exists, use data from the user object
           setProfile({
             name: currentUser.profile?.name || currentUser.username || '',
             interests: currentUser.profile?.interests || [],
-            profilePicture: currentUser.profile?.profilePicture || null
+            profilePicture: currentUser.profile?.profilePicture || null,
+            location: currentUser.profile?.location || {
+              address: '',
+              latitude: null,
+              longitude: null
+            }
           });
         }
       } catch (error) {

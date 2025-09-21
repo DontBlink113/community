@@ -14,7 +14,6 @@ const EventForm = ({ onBack }) => {
   const [newStartTime, setNewStartTime] = useState('');
   const [newEndTime, setNewEndTime] = useState('');
   const [isGettingLocation, setIsGettingLocation] = useState(false);
-  const [newPerson, setNewPerson] = useState('');
 
   // Initialize form with user data only once when component mounts
   useEffect(() => {
@@ -31,7 +30,6 @@ const EventForm = ({ onBack }) => {
           latitude: null,
           longitude: null
         },
-        includedPeople: [],
         sameGender: false,
         isContinuing: false,
         daysPerWeek: 1
@@ -103,21 +101,6 @@ const EventForm = ({ onBack }) => {
     }
   };
 
-  const handleAddPerson = (e) => {
-    e.preventDefault();
-    if (newPerson.trim() && !event.includedPeople.includes(newPerson.trim())) {
-      updateEvent({
-        includedPeople: [...event.includedPeople, newPerson.trim()]
-      });
-      setNewPerson('');
-    }
-  };
-
-  const handleRemovePerson = (personToRemove) => {
-    updateEvent({
-      includedPeople: event.includedPeople.filter(person => person !== personToRemove)
-    });
-  };
 
   const handleAddScheduledTime = (e) => {
     e.preventDefault();

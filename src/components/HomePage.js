@@ -1,22 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useProfile } from '../context/ProfileContext';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { getUserPlannedEvents } from '../services/matchingService';
+import { getEventSuggestions, createSuggestionRequest } from '../services/suggestionService';
 import Navbar from './Navbar';
 import CurrentEvents from './CurrentEvents';
 import PendingEvents from './PendingEvents';
 import JoinEvents from './JoinEvents';
+import EventSuggestions from './EventSuggestions';
 import Footer from './Footer';
 import styles from './HomePage.module.css';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const { profile } = useProfile();
   const [currentEvents, setCurrentEvents] = useState([]);
   const [pendingEvents, setPendingEvents] = useState([]);
   const [joinableEvents, setJoinableEvents] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
 
   // Helper function to format dates
   const formatDate = (dateString) => {
@@ -28,7 +34,7 @@ const HomePage = () => {
   };
 
   // Format time for display
-  const formatEventTime = (event) => {
+  const formatEventTime = useCallback((event) => {
     if (event.meetingTime) {
       return `${formatDate(event.meetingTime.date)} at ${event.meetingTime.startTime}`;
     }
@@ -37,7 +43,7 @@ const HomePage = () => {
       return `${formatDate(firstTime.date)} at ${firstTime.startTime}`;
     }
     return 'Time TBD';
-  };
+  }, []);
 
   // Fetch user's events and planned events
   useEffect(() => {
@@ -93,13 +99,43 @@ const HomePage = () => {
         // For now, we'll leave joinable events empty since we don't have a system for that yet
         setJoinableEvents([]);
 
+        // Fetch event suggestions
+        await fetchSuggestions();
+
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
     };
 
+    const fetchSuggestions = async () => {
+      if (!currentUser?.username) {
+        setSuggestions([]);
+        return;
+      }
+
+      setSuggestionsLoading(true);
+      try {
+        // Use the user's profile location if available
+        const userLocation = profile?.location;
+
+        // If no location is set or incomplete, don't show suggestions
+        if (!userLocation?.latitude || !userLocation?.longitude) {
+          setSuggestions([]);
+          return;
+        }
+
+        const eventSuggestions = await getEventSuggestions(currentUser.username, userLocation);
+        setSuggestions(eventSuggestions);
+      } catch (error) {
+        console.error('Error fetching suggestions:', error);
+        setSuggestions([]);
+      } finally {
+        setSuggestionsLoading(false);
+      }
+    };
+
     fetchUserData();
-  }, [currentUser]);
+  }, [currentUser, formatEventTime, profile]);
 
   const handleJoinEvent = (eventId) => {
     // Handle join event logic here
@@ -110,6 +146,33 @@ const HomePage = () => {
   const handleEventClick = (event) => {
     if (event.chatId) {
       navigate(`/chat/${event.chatId}`);
+    }
+  };
+
+  const handleJoinSuggestion = async (suggestion, selectedTimes) => {
+    if (!currentUser?.username) {
+      alert('You must be logged in to join events');
+      return;
+    }
+
+    try {
+      const result = await createSuggestionRequest(suggestion, currentUser.username, selectedTimes);
+
+      if (result.success) {
+        if (result.matched) {
+          alert('Great! You\'ve been matched with the group! Check your Upcoming Events section.');
+        } else {
+          alert('Your request has been submitted! You\'ll be notified when the group is complete.');
+        }
+
+        // Refresh the page data to show the new event
+        window.location.reload();
+      } else {
+        alert('Failed to join event: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error joining suggestion:', error);
+      alert('Failed to join event. Please try again.');
     }
   };
 
@@ -149,9 +212,15 @@ const HomePage = () => {
 
           <CurrentEvents events={currentEvents} onEventClick={handleEventClick} />
           <PendingEvents events={pendingEvents} onDeleteEvent={handleDeleteEvent} />
-          <JoinEvents 
-            events={joinableEvents} 
-            onJoin={handleJoinEvent} 
+          <JoinEvents
+            events={joinableEvents}
+            onJoin={handleJoinEvent}
+          />
+
+          <EventSuggestions
+            suggestions={suggestions}
+            onJoinSuggestion={handleJoinSuggestion}
+            isLoading={suggestionsLoading}
           />
         </div>
       </main>

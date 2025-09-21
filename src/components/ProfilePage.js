@@ -14,17 +14,23 @@ const ProfilePage = () => {
   const { currentUser, logout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
       if (!currentUser) return;
       
       try {
-        const userDoc = await getDoc(doc(db, 'profiles', currentUser));
+        const userDoc = await getDoc(doc(db, 'profiles', currentUser.username));
         if (userDoc.exists()) {
           const data = userDoc.data();
           updateProfile({
-            name: data.name || ''
+            name: data.name || '',
+            location: data.location || {
+              address: '',
+              latitude: null,
+              longitude: null
+            }
           });
         }
       } catch (error) {
@@ -41,10 +47,11 @@ const ProfilePage = () => {
     setIsSaving(true);
     try {
       await setDoc(
-        doc(db, 'profiles', currentUser),
-        { 
+        doc(db, 'profiles', currentUser.username),
+        {
           name: profile.name,
-          updatedAt: new Date().toISOString() 
+          location: profile.location,
+          updatedAt: new Date().toISOString()
         },
         { merge: true }
       );
@@ -54,6 +61,57 @@ const ProfilePage = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by this browser');
+      return;
+    }
+
+    setIsGettingLocation(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        updateProfile({
+          ...profile,
+          location: {
+            ...profile.location,
+            latitude,
+            longitude,
+            address: `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`
+          }
+        });
+        setIsGettingLocation(false);
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        alert('Unable to retrieve your location');
+        setIsGettingLocation(false);
+      }
+    );
+  };
+
+  const handleLocationInputChange = (field, value) => {
+    updateProfile({
+      ...profile,
+      location: {
+        ...profile.location,
+        [field]: value
+      }
+    });
+  };
+
+  const handleClearLocation = () => {
+    updateProfile({
+      ...profile,
+      location: {
+        address: '',
+        latitude: null,
+        longitude: null
+      }
+    });
   };
 
   const handleLogout = async () => {
@@ -119,6 +177,45 @@ const ProfilePage = () => {
                     disabled={isSaving}
                   />
                 </div>
+
+                <div className={styles.inputGroup}>
+                  <label className={styles.label}>Location</label>
+                  <div className={styles.locationContainer}>
+                    <input
+                      type="text"
+                      value={profile.location?.address || ''}
+                      onChange={(e) => handleLocationInputChange('address', e.target.value)}
+                      className={styles.input}
+                      placeholder="Enter your address or use GPS"
+                      disabled={isSaving}
+                    />
+                    <div className={styles.locationButtons}>
+                      <button
+                        type="button"
+                        onClick={handleGetCurrentLocation}
+                        className={styles.gpsButton}
+                        disabled={isGettingLocation || isSaving}
+                      >
+                        {isGettingLocation ? 'Getting...' : '📍 Use GPS'}
+                      </button>
+                      {profile.location?.address && (
+                        <button
+                          type="button"
+                          onClick={handleClearLocation}
+                          className={styles.clearButton}
+                          disabled={isSaving}
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  {profile.location?.latitude && profile.location?.longitude && (
+                    <div className={styles.locationPreview}>
+                      📍 Coordinates: {profile.location.latitude.toFixed(6)}, {profile.location.longitude.toFixed(6)}
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <div className={styles.viewMode}>
@@ -126,6 +223,12 @@ const ProfilePage = () => {
                   <span className={styles.infoLabel}>Name:</span>
                   <span className={styles.infoValue}>
                     {profile.name || 'Not set'}
+                  </span>
+                </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Location:</span>
+                  <span className={styles.infoValue}>
+                    {profile.location?.address || 'Not set'}
                   </span>
                 </div>
               </div>
