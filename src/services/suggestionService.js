@@ -20,6 +20,11 @@ export const getEventSuggestions = async (currentUserUsername, userLocation) => 
     const suggestions = [];
 
     for (const event of allEvents) {
+      // Skip sub-events (events created from joining suggestions)
+      if (event.basedOnSuggestion) {
+        continue;
+      }
+
       // Skip if no location data
       if (!event.location?.latitude || !event.location?.longitude) {
         continue;
