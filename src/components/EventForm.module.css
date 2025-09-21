@@ -56,69 +56,6 @@
   margin-bottom: 0.25rem;
 }
 
-.labelRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.autoScheduleLabel {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: #4a5568;
-  cursor: pointer;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-
-.autoScheduleLabel:hover {
-  color: #2d3748;
-}
-
-.autoScheduleCheckbox {
-  width: 1.1rem;
-  height: 1.1rem;
-  border: 2px solid #cbd5e0;
-  border-radius: 4px;
-  appearance: none;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s ease;
-  background-color: white;
-  margin: 0;
-}
-
-.autoScheduleCheckbox:checked {
-  background-color: #00b4d8;
-  border-color: #00b4d8;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 80%;
-}
-
-.autoScheduleCheckbox:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.2);
-  border-color: #00b4d8;
-}
-
-.autoScheduleMessage {
-  margin: 0.5rem 0 0 0;
-  padding: 0.75rem 1rem;
-  background-color: #f0f9ff;
-  border-radius: 8px;
-  color: #0369a1;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  border: 1px solid #bae6fd;
-}
-
 .input, .select {
   padding: 0.875rem 1rem;
   border: 2px solid #e9ecef;

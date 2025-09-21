@@ -14,7 +14,6 @@ const EventForm = ({ onBack }) => {
   const [newStartTime, setNewStartTime] = useState('');
   const [newEndTime, setNewEndTime] = useState('');
   const [isGettingLocation, setIsGettingLocation] = useState(false);
-  const [autoSchedule, setAutoSchedule] = useState(false);
   const [newPerson, setNewPerson] = useState('');
 
   // Initialize form with user data only once when component mounts
@@ -239,55 +238,37 @@ const EventForm = ({ onBack }) => {
 
           {/* Date & Time */}
           <div className={styles.formGroup}>
-            <div className={styles.labelRow}>
-              <label className={styles.label}>When?</label>
-              <label className={styles.autoScheduleLabel}>
-                <input
-                  type="checkbox"
-                  checked={autoSchedule}
-                  onChange={(e) => setAutoSchedule(e.target.checked)}
-                  className={styles.autoScheduleCheckbox}
-                />
-                <span>Auto-schedule based on my availability</span>
-              </label>
+            <label className={styles.label}>When?</label>
+            <div className={styles.scheduleInputs}>
+              <input
+                type="date"
+                className={styles.input}
+                value={newDate}
+                onChange={(e) => setNewDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+              />
+              <input
+                type="time"
+                className={styles.input}
+                value={newStartTime}
+                onChange={(e) => setNewStartTime(e.target.value)}
+              />
+              <span className={styles.timeSeparator}>to</span>
+              <input
+                type="time"
+                className={styles.input}
+                value={newEndTime}
+                onChange={(e) => setNewEndTime(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={handleAddScheduledTime}
+                className={styles.addButton}
+                disabled={!newDate || !newStartTime || !newEndTime}
+              >
+                Add Time
+              </button>
             </div>
-            
-            {autoSchedule ? (
-              <p className={styles.autoScheduleMessage}>
-                We'll find the best time for everyone, based on your availability.
-              </p>
-            ) : (
-              <div className={styles.scheduleInputs}>
-                <input
-                  type="date"
-                  className={styles.input}
-                  value={newDate}
-                  onChange={(e) => setNewDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                />
-                <input
-                  type="time"
-                  className={styles.input}
-                  value={newStartTime}
-                  onChange={(e) => setNewStartTime(e.target.value)}
-                />
-                <span className={styles.timeSeparator}>to</span>
-                <input
-                  type="time"
-                  className={styles.input}
-                  value={newEndTime}
-                  onChange={(e) => setNewEndTime(e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={handleAddScheduledTime}
-                  className={styles.addButton}
-                  disabled={!newDate || !newStartTime || !newEndTime}
-                >
-                  Add Time
-                </button>
-              </div>
-            )}
             
             {event.scheduledTimes.length > 0 && (
               <div className={styles.scheduledTimesList}>
